@@ -1,9 +1,12 @@
 import pygame
 import sys
+
+# from pygame.sprite import _Group
 from constants import *
 import random
 from images import *
 from sounds import *
+from maps import *
 
 # Inicializar Pygame
 pygame.init()
@@ -15,21 +18,41 @@ pygame.display.set_caption("     Natacha's game")
 icon = pygame.image.load(ICON_PATH)
 pygame.display.set_icon(icon)
 
+# define variables
+tile_size = 80
+
+
 miau_cat = pygame.mixer.Sound(PATH_MIOU_CAT)
 miau_cat.set_volume(0.2)
 
-miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 10, HEIGHT / 15))
+miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 miau_left_image = pygame.transform.flip(miau_right_image, True, False)
 
-walk_right_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH // 10, HEIGHT // 10)) for image in PLAYER_WALK_RIGHT_IMAGES]
+walk_right_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH // 20, HEIGHT // 16)) for image in PLAYER_WALK_RIGHT_IMAGES_LIST]
 walk_left_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(),
-                        (WIDTH // 10, HEIGHT // 10)), True, False) for image in PLAYER_WALK_RIGHT_IMAGES]
+                        (WIDTH // 20, HEIGHT // 16)), True, False) for image in PLAYER_WALK_RIGHT_IMAGES_LIST]
+
+wall_image = pygame.transform.scale(pygame.image.load(WALL).convert_alpha(), (WIDTH / 16, HEIGHT / 20))
+tree_image = pygame.transform.scale(pygame.image.load(TREE).convert_alpha(), (WIDTH / 16, HEIGHT / 11))
+
+bat_left_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 17, HEIGHT / 17)) for image in BAT_LEFT_IMAGES_LIST]
+bat_right_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(), 
+                        (WIDTH // 17, HEIGHT // 17)), True, False) for image in BAT_LEFT_IMAGES_LIST]
+
+key_image = pygame.transform.scale(pygame.image.load(KEY).convert_alpha(), (WIDTH / 18, HEIGHT / 18))
+
+star_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 24, HEIGHT / 20)) for image in STARS_LIST]
+
+
+def draw_grid():
+    for line in range(0, 10):
+        pygame.draw.line(screen, WHITE, (0, line * tile_size), (WIDTH, line * tile_size))
+        pygame.draw.line(screen, WHITE, (line * tile_size, 0), (line * tile_size, HEIGHT))
 
 # Definir la clase del jugador
 class Player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x, y):
         super().__init__()
-
         # Nuevas propiedades para la animación de caminar
         self.walk_index = 0
         self.walk_images_right = walk_right_images
@@ -37,18 +60,28 @@ class Player(pygame.sprite.Sprite):
 
         self.image = self.walk_images_right[0] #el juego empieza con player a la derecha
         self.rect = self.image.get_rect()
-        self.rect.center = (250, 475)
-        self.speed = 3
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = PLAYER_SPEED
+        self.vel_y = 0
         self.jump_height = 15
         self.is_jumping = False
         self.jump_count = 10  # Inicializar jump_count aquí
         self.direction = 1
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
         self.hitbox = pygame.Surface((self.rect.width, self.rect.height))
         self.hitbox.fill(GREEN)
         self.hitbox_rect = self.hitbox.get_rect()  # Agregar esta línea
         self.player_hitbox = self.hitbox.get_rect()  # Agregar esta línea
+        # Nueva variable para rastrear la cantidad de saltos realizados
+        self.jump_count = 0
+        self.max_jump_count = 2  # Establece el límite de saltos consecutivos
+        self.score = 0
 
     def update(self):
+        dx = 0
+        dy = 0
         # Obtener las teclas presionadas
         keys = pygame.key.get_pressed()
 
@@ -70,41 +103,65 @@ class Player(pygame.sprite.Sprite):
             if self.walk_index >= len(self.walk_images_left) * 5:
                 self.walk_index = 0
 
+        if keys[pygame.K_a] == False and keys[pygame.K_d] == False:
+            self.counter = 0
+            self.index = 0
+            if self.direction == 1:
+                self.image = self.walk_images_right[self.index]
+            if self.direction == -1:
+                self.image = self.walk_images_left[self.index]
+
         # Controlar el salto
-        if keys[pygame.K_SPACE]:
-            if not self.is_jumping:
-                self.is_jumping = True
+        if keys[pygame.K_SPACE] and self.is_jumping == False and self.jump_count < self.max_jump_count:
+            self.vel_y = -15
+            self.is_jumping = True
+            self.jump_count += 1
 
-        # Aplicar la gravedad si el jugador está en el aire
-        if self.is_jumping:
-            self.jump()
+        if keys[pygame.K_SPACE] == False:
+            self.is_jumping = False
 
-        # # Restablecer la posición vertical al suelo si hay colisión con una plataforma
-        # platform_hit = pygame.sprite.spritecollide(self, platforms, False)
-        # if platform_hit:
-        #     # Verificar si la colisión es en la parte superior de la plataforma
-        #     if self.rect.colliderect(platform_hit[0].rect):
-        #         self.rect.y = platform_hit[0].rect.y - self.rect.height
-        #         self.is_jumping = False
-        #         self.jump_count = 10
+        # Aplicar gravedad si el jugador está en el aire
+        self.vel_y += GRAVITY
+        if self.vel_y > 10:
+            self.vel_y = 10
+        dy += self.vel_y
 
-        # # Restablecer la posición vertical al suelo si está en el borde inferior de la pantalla
-        # if self.rect.bottom >= HEIGHT:
-        #     self.rect.bottom = HEIGHT
-        #     self.is_jumping = False
-        #     self.jump_count = 10
+        # comprobar colision con límites del mundo
+        for tile in world.tile_list:
+            if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
+                dx = 0
+                self.jump_count = 0  # Restablecer jump_count cuando colisiona con el suelo
+            if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width, self.height):
+                # Verificar si el jugador está subiendo o bajando
+                if self.vel_y < 0:
+                    dy = tile[1].bottom - self.rect.top
+                    self.vel_y = 0
+                elif self.vel_y >= 0:
+                    dy = tile[1].top - self.rect.bottom
+                    self.vel_y = 0
+                    self.is_jumping = False
+                    self.jump_count = 0  # Restablecer jump_count cuando colisiona con el suelo
 
-        # # Restablecer la posición horizontal si está en los bordes laterales de la pantalla
-        # if self.rect.left <= 0:
-        #     self.rect.left = 0
-        # elif self.rect.right >= WIDTH:
-        #     self.rect.right = WIDTH
+        
+        # Verificar colisiones con estrellas
+        stars_hit = pygame.sprite.spritecollide(self, stars_group, True)
+        for star in stars_hit:
+            # Incrementar la puntuación cuando el jugador colisiona con una estrella
+            self.score += 1
+            print("Puntuación:", self.score)
 
-        # # Actualizar la posición del hitbox
-        # self.hitbox_rect.topleft = self.rect.topleft
+        #coordenadas de player
+        self.rect.x += dx
+        self.rect.y += dy
 
-    def shoot(self):
-        if self.direction == 1:
+        if self.rect.bottom > HEIGHT:
+            self.rect.bottom = HEIGHT
+            dy = 0
+            
+        screen.blit(self.image, self.rect)
+
+    def shoot(self, direction):
+        if direction == 1:
             miau = Miau(self.rect.right, self.rect.centery - 25, self.direction)
         else:
             miau = Miau(self.rect.left - 50, self.rect.centery - 25, self.direction)
@@ -112,68 +169,141 @@ class Player(pygame.sprite.Sprite):
         miaus.add(miau)
         screen.blit(self.hitbox, self.player_hitbox)
 
-    def jump(self):
-        if self.jump_count >= -10:
-            neg = 1
-            if self.jump_count < 0:
-                neg = -1
-            self.rect.y -= (self.jump_count ** 2) * 0.3 * neg
-            self.jump_count -= 1
-        else:
-            self.is_jumping = False
-            self.jump_count = 10
-            self.rect.centery = 475  # Restablecer la posición vertical al suelo después del salto
+    # def jump(self):
+    #     if self.jump_count >= -10:
+    #         neg = 1
+    #         if self.jump_count < 0:
+    #             neg = -1
+    #         self.rect.y -= (self.jump_count ** 2) * 0.3 * neg
+    #         self.jump_count -= 1
+    #     else:
+    #         self.is_jumping = False
+    #         self.jump_count = 10
 
-# class Platform(pygame.sprite.Sprite):
-#     def __init__(self, x, y, width, height):
-#         super().__init__()
-#         self.image = pygame.Surface((width, height))
-#         self.image.fill(BLUE)  # Puedes cambiar el color o cargar una imagen para la plataforma
-#         self.rect = self.image.get_rect()
-#         self.rect.x = x
-#         self.rect.y = y
+class World():
+    def __init__(self, data) -> None:
+        self.tile_list = []
+        #load images
+        row_count = 0
+        for row in data:
+            col_count = 0
+            for tile in row:
+                if tile == 4:
+                    img = wall_image
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 15:
+                    img = tree_image
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 19:
+                    key = key_image
+                    key_rect = key.get_rect()
+                    key_rect.x = col_count * tile_size
+                    key_rect.y = row_count * tile_size + 15
+                    tile = (key, key_rect)
+                    self.tile_list.append(tile)
+                if tile == 16:
+                    bat = Enemy((col_count + 3) * tile_size, row_count * tile_size, random.choice([-1, 1]) * BAT_SPEED)
+                    bat_group.add(bat)
+                    
+                col_count += 1
+            row_count += 1
 
-#         # Agregar hitbox
-#         self.hitbox = pygame.Surface((width, height))
-#         self.hitbox.fill(RED)
-#         self.hitbox_rect = self.hitbox.get_rect()
-#         self.hitbox_rect.topleft = self.rect.topleft
+    def draw(self):
+        for tile in self.tile_list:
+            screen.blit(tile[0], tile[1])
+            # pygame.draw.rect(screen, RED, tile[1], 2)
 
-#     def update(self):
-#         # Actualizar la posición de la hitbox con la posición de la plataforma
-#         self.hitbox_rect.topleft = self.rect.topleft
+class Star(pygame.sprite.Sprite):
+    def __init__(self, x, y) -> None:
+        super().__init__()
+        self.star_index = 0
+        self.star_images = star_images
+        self.image = star_images[0]
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y + 25
 
+        # Crear la hitbox de la estrella (rectángulo rojo)
+        self.hitbox = pygame.Surface((self.rect.width, self.rect.height))
+        self.hitbox.fill(RED)
+        self.star_hitbox = self.hitbox.get_rect()
+
+    def update(self):
+        # Actualizar la posición de la hitbox de la estrella
+        self.star_hitbox.topleft = self.rect.topleft
+
+        # Cambiar la imagen de la estrella según el índice
+        self.image = self.star_images[self.star_index // 15]
+
+        # Incrementar el índice para cambiar la imagen en el próximo ciclo
+        self.star_index += 1
+        if self.star_index >= len(self.star_images) * 15:
+            self.star_index = 0
+
+        # Renderizar la hitbox de la estrella
+        screen.blit(self.hitbox, self.star_hitbox)
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self) -> None:
+    def __init__(self, x, y, speed) -> None:
         super().__init__()
-        self.image = pygame.Surface((30, 30))
-        self.image.fill(RED)
+        self.bat_index = 0
+        self.bat_left_images = bat_left_images
+        self.bat_right_images = bat_right_images
+        self.image = bat_left_images[0]
         self.rect = self.image.get_rect()
-        self.rect.x = random.randrange(0, 500 - self.rect.width)  # Posición X aleatoria
-        self.rect.y = random.randrange(0, 200)  # Posición Y aleatoria
-        self.speed = random.randint(1, 5)  # Velocidad aleatoria
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = speed
+        self.move_couter = 0
+        self.direction = 0
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.hitbox = pygame.Surface((self.rect.width, self.rect.height))
+        self.hitbox.fill(GREEN)
+        self.hitbox_rect = self.hitbox.get_rect()  # Agregar esta línea
+        self.player_hitbox = self.hitbox.get_rect()  # Agregar esta línea
 
     def update(self):
         # Lógica de actualización del enemigo (si es necesario)
-        self.rect.y += self.speed
-        if self.rect.y > 500:
-            # Restablecer la posición del enemigo si sale de la pantalla
-            self.rect.y = random.randrange(-30, -10)
-            self.rect.x = random.randrange(0, 500 - self.rect.width)
-            self.speed = random.randint(1, 5)
+        self.rect.x += self.speed
+        self.move_couter += 1
+        if abs(self.move_couter) > 90:
+            self.speed *= -1
+            self.move_couter *= -1
+
+                # Cambiar la imagen del murciélago según la dirección
+        if self.speed > 0:  # Si el murciélago se mueve hacia la derecha
+            self.image = self.bat_right_images[self.bat_index // 5]
+        else:  # Si el murciélago se mueve hacia la izquierda
+            self.image = self.bat_left_images[self.bat_index // 5]
+
+        self.bat_index += 1
+        if self.bat_index >= len(self.bat_left_images) * 5:
+            self.bat_index = 0
+
+
 
 # Definir la clase Miau (proyectil)
 class Miau(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
-        super().__init__()
+        pygame.sprite.Sprite.__init__(self)
+
         if direction == 1:
             self.image = miau_right_image
         else:
             self.image = miau_left_image
+
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y
+        self.rect.y = y - 10
         self.speed = 6
         self.direction = direction
         # Crear la hitbox del proyectil (rectángulo rojo)
@@ -191,25 +321,29 @@ class Miau(pygame.sprite.Sprite):
         # Actualizar la posición de la hitbox del proyectil
         self.miau_hitbox.topleft = self.rect.topleft
 
+        # Verificar colisiones con enemigos
+        enemies_hit = pygame.sprite.spritecollide(self, bat_group, True)
+        for enemy in enemies_hit:
+            # Aquí puedes agregar lógica adicional si es necesario
+            # por ejemplo, eliminar el proyectil y reducir la vida del enemigo
+            self.kill()
+            star = Star(enemy.rect.x, enemy.rect.y)
+            all_sprites.add(star)
+            stars_group.add(star)
+
         # Renderizar la hitbox del proyectil
         screen.blit(self.hitbox, self.miau_hitbox)
 
 # Crear jugador
-player = Player()
-enemy = Enemy()
-
-# # Crear plataformas
-# platform1 = Platform(50, 400, 200, 20)
-# platform2 = Platform(300, 300, 200, 20)
-
-# # Crear grupo de plataformas
-# platforms = pygame.sprite.Group()
-# platforms.add(platform1, platform2)
+player = Player(x=200, y= 350)
+bat_group = pygame.sprite.Group()
+world = World(world_data)
+stars_group = pygame.sprite.Group()
 
 # Crear grupo de sprites y agregar el jugador al grupo
 miaus = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
-all_sprites.add(player, enemy)
+all_sprites.add(player)
 
 # Bucle principal del juego
 running = True
@@ -221,7 +355,7 @@ while running:
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
-                player.shoot()
+                player.shoot(player.direction)
                 miau_cat.play()
 
         if event.type == pygame.KEYUP:
@@ -230,14 +364,32 @@ while running:
             elif event.key == pygame.K_d:
                 player.direction = 1
 
+    # Verificar colisiones con enemigos
+    enemies_hit = pygame.sprite.spritecollide(player, bat_group, True)
+    for enemy in enemies_hit:
+        # Aquí puedes agregar lógica adicional si es necesario
+        # por ejemplo, reducir la vida del jugador al colisionar con un enemigo
+        pass
+
+
+
+    # Verificar colisiones con estrellas
+    stars_hit = pygame.sprite.spritecollide(player, stars_group, True)
+    for star in stars_hit:
+        # Aquí puedes agregar lógica adicional si es necesario
+        # por ejemplo, incrementar la puntuación del jugador al colisionar con una estrella
+        pass
+
     # Actualizar
     all_sprites.update()
+    bat_group.update()
+    stars_group.update()
 
     # Dibujar en la pantalla
     screen.fill(BLACK)
 
-    # Dibujar hitbox del jugador
-    pygame.draw.rect(screen, GREEN, player.rect, 2)
+    
+
     #Dibujar hitbox del proyectil
     # for miau in miaus:
         # pygame.draw.rect(screen, RED, miau.rect, 2)
@@ -246,6 +398,13 @@ while running:
     # for platform in platforms:
     #     pygame.draw.rect(screen, GREEN, platform.hitbox_rect, 2)
 
+    # draw_grid()
+
+    # Dibujar hitbox del jugador
+    # pygame.draw.rect(screen, GREEN, player.rect, 2)
+    world.draw()
+    bat_group.draw(screen)
+    stars_group.draw(screen)
     all_sprites.draw(screen)
 
     # Actualizar la pantalla
