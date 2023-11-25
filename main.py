@@ -20,13 +20,27 @@ pygame.display.set_icon(icon)
 
 # define variables
 tile_size = 80
+game_over = 0
 
+miau_cat_sound = pygame.mixer.Sound(MIOU_CAT_SOUND)
+miau_cat_sound.set_volume(0.15)
 
-miau_cat = pygame.mixer.Sound(PATH_MIOU_CAT)
-miau_cat.set_volume(0.2)
+star_coin_sound = pygame.mixer.Sound(SATAR_SOUND)
+star_coin_sound.set_volume(1)
+
+bat_collision_sound = pygame.mixer.Sound(BAT_IMPACT_SOUND)
+bat_collision_sound.set_volume(1)
+
+player_death_sound = pygame.mixer.Sound(BAT_IMPACT_SOUND)
+player_death_sound.set_volume(1)
+
+key_sound = pygame.mixer.Sound(ITEM_SOUND)
+key_sound.set_volume(.5)
 
 miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 miau_left_image = pygame.transform.flip(miau_right_image, True, False)
+
+cat_death_image = pygame.transform.scale(pygame.image.load(CAT_DEATH_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 
 walk_right_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH // 20, HEIGHT // 16)) for image in PLAYER_WALK_RIGHT_IMAGES_LIST]
 walk_left_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(),
@@ -78,17 +92,19 @@ class Player(pygame.sprite.Sprite):
         self.jump_count = 0
         self.max_jump_count = 2  # Establece el límite de saltos consecutivos
         self.score = 0
+        self.lives = 500
+        self.key_score = 0
 
     def update(self):
+        
         dx = 0
         dy = 0
         # Obtener las teclas presionadas
         keys = pygame.key.get_pressed()
-
         # Animación de caminar hacia la derecha
         if keys[pygame.K_d]:
             self.direction = 1
-            self.rect.x += self.speed
+            dx += 5
             self.image = self.walk_images_right[self.walk_index // 5]  # Ajusta el divisor según la velocidad deseada de la animación
             self.walk_index += 1
             if self.walk_index >= len(self.walk_images_right) * 5:
@@ -97,7 +113,7 @@ class Player(pygame.sprite.Sprite):
         # Animación de caminar hacia la izquierda
         if keys[pygame.K_a]:
             self.direction = -1
-            self.rect.x -= self.speed
+            dx -= 5
             self.image = self.walk_images_left[self.walk_index // 5]
             self.walk_index += 1
             if self.walk_index >= len(self.walk_images_left) * 5:
@@ -141,24 +157,58 @@ class Player(pygame.sprite.Sprite):
                     self.vel_y = 0
                     self.is_jumping = False
                     self.jump_count = 0  # Restablecer jump_count cuando colisiona con el suelo
-
         
+
+
         # Verificar colisiones con estrellas
         stars_hit = pygame.sprite.spritecollide(self, stars_group, True)
         for star in stars_hit:
-            # Incrementar la puntuación cuando el jugador colisiona con una estrella
+            star_coin_sound.play()
             self.score += 1
             print("Puntuación:", self.score)
+
+        # Verificar colisiones con enemigos
+        enemies_hit = pygame.sprite.spritecollide(player, bat_group, False)
+        for enemy in enemies_hit:
+            if player.rect.colliderect(enemy.rect):
+                player_death_sound.play()
+                player.lives -= 500
+                print(player.lives)
+                all_sprites.remove(player)
+                player.image = cat_death_image
+                player.rect.y -= 3
+
+        key_hit = pygame.sprite.spritecollide(self, key_group, True)
+        for key in key_hit:
+            key_sound.play()
+            self.key_score += 1
+            print("Llaves: {0}".format(self.key_score))
+            
+
 
         #coordenadas de player
         self.rect.x += dx
         self.rect.y += dy
 
-        if self.rect.bottom > HEIGHT:
-            self.rect.bottom = HEIGHT
-            dy = 0
-            
+        # if self.rect.bottom > HEIGHT:
+        #     self.rect.bottom = HEIGHT
+        #     dy = 0
+
+        if self.rect.x >= WIDTH - 60:
+            self.rect.x = WIDTH - 60
+        if self.rect.x <= 0:
+            self.rect.x = 0
+        if self.rect.y >= HEIGHT - 60:
+            self.rect.y = HEIGHT - 60
+        if self.rect.y <= 0:
+            self.rect.y = 0
+                
+        elif game_over == -1:
+            self.image = cat_death_image
+            self.rect.y -= 3
+
         screen.blit(self.image, self.rect)
+    
 
     def shoot(self, direction):
         if direction == 1:
@@ -203,12 +253,8 @@ class World():
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
                 if tile == 19:
-                    key = key_image
-                    key_rect = key.get_rect()
-                    key_rect.x = col_count * tile_size
-                    key_rect.y = row_count * tile_size + 15
-                    tile = (key, key_rect)
-                    self.tile_list.append(tile)
+                    key = Key(col_count * tile_size, row_count * tile_size + 15)
+                    key_group.add(key)
                 if tile == 16:
                     bat = Enemy((col_count + 3) * tile_size, row_count * tile_size, random.choice([-1, 1]) * BAT_SPEED)
                     bat_group.add(bat)
@@ -220,6 +266,24 @@ class World():
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
             # pygame.draw.rect(screen, RED, tile[1], 2)
+
+class Key(pygame.sprite.Sprite):
+    def __init__(self, x, y) -> None:
+        super().__init__()
+        self.image = key_image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y + 15  # Ajustar la posición vertical según sea necesario
+        self.hitbox = pygame.Surface((self.rect.width, self.rect.height))
+        self.hitbox.fill(RED)
+        self.key_hitbox = self.hitbox.get_rect()
+
+    def update(self):
+        # Actualizar la posición de la hitbox de la llave
+        self.key_hitbox.topleft = self.rect.topleft
+        # Renderizar la hitbox de la llave
+        screen.blit(self.hitbox, self.key_hitbox)
+
 
 class Star(pygame.sprite.Sprite):
     def __init__(self, x, y) -> None:
@@ -241,11 +305,11 @@ class Star(pygame.sprite.Sprite):
         self.star_hitbox.topleft = self.rect.topleft
 
         # Cambiar la imagen de la estrella según el índice
-        self.image = self.star_images[self.star_index // 15]
+        self.image = self.star_images[self.star_index // 10]
 
         # Incrementar el índice para cambiar la imagen en el próximo ciclo
         self.star_index += 1
-        if self.star_index >= len(self.star_images) * 15:
+        if self.star_index >= len(self.star_images) * 10:
             self.star_index = 0
 
         # Renderizar la hitbox de la estrella
@@ -326,6 +390,7 @@ class Miau(pygame.sprite.Sprite):
         for enemy in enemies_hit:
             # Aquí puedes agregar lógica adicional si es necesario
             # por ejemplo, eliminar el proyectil y reducir la vida del enemigo
+            bat_collision_sound.play()
             self.kill()
             star = Star(enemy.rect.x, enemy.rect.y)
             all_sprites.add(star)
@@ -336,6 +401,7 @@ class Miau(pygame.sprite.Sprite):
 
 # Crear jugador
 player = Player(x=200, y= 350)
+key_group = pygame.sprite.Group()
 bat_group = pygame.sprite.Group()
 world = World(world_data)
 stars_group = pygame.sprite.Group()
@@ -356,7 +422,7 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
                 player.shoot(player.direction)
-                miau_cat.play()
+                miau_cat_sound.play()
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
@@ -364,31 +430,15 @@ while running:
             elif event.key == pygame.K_d:
                 player.direction = 1
 
-    # Verificar colisiones con enemigos
-    enemies_hit = pygame.sprite.spritecollide(player, bat_group, True)
-    for enemy in enemies_hit:
-        # Aquí puedes agregar lógica adicional si es necesario
-        # por ejemplo, reducir la vida del jugador al colisionar con un enemigo
-        pass
-
-
-
-    # Verificar colisiones con estrellas
-    stars_hit = pygame.sprite.spritecollide(player, stars_group, True)
-    for star in stars_hit:
-        # Aquí puedes agregar lógica adicional si es necesario
-        # por ejemplo, incrementar la puntuación del jugador al colisionar con una estrella
-        pass
-
     # Actualizar
-    all_sprites.update()
+    key_group.update()
     bat_group.update()
+    all_sprites.update()
     stars_group.update()
+    # game_over = player.update(game_over)
 
     # Dibujar en la pantalla
     screen.fill(BLACK)
-
-    
 
     #Dibujar hitbox del proyectil
     # for miau in miaus:
@@ -403,6 +453,7 @@ while running:
     # Dibujar hitbox del jugador
     # pygame.draw.rect(screen, GREEN, player.rect, 2)
     world.draw()
+    key_group.draw(screen)
     bat_group.draw(screen)
     stars_group.draw(screen)
     all_sprites.draw(screen)
