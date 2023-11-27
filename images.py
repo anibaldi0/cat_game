@@ -22,9 +22,14 @@ TREE = "images/tree.png"
 
 CAT_DEATH_IMAGE = "images/cat_death_01.png"
 
+RIP_CAT = "images/rip_cat.png"
+
 LAVA_IMAGE = "images/piso01.png"
 
 DOOR_IMAGE = "images/door.png"
+
+START_BUTTON_IMAGE = "images/start_button.png"
+START_BUTTON_PRESSED_IMAGE = "images/start_button_pressed.png"
 
 BAT_LEFT_IMAGES_LIST = ["images/bat_left_01.png",
                         "images/bat_left_02.png",

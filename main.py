@@ -48,40 +48,48 @@ star_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), 
 
 door_image = pygame.transform.scale(pygame.image.load(DOOR_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 
+start_button_image = pygame.transform.scale(pygame.image.load(START_BUTTON_IMAGE).convert_alpha(), (WIDTH / 10, HEIGHT / 10))
+start_button_pressed_image = pygame.transform.scale(pygame.image.load(START_BUTTON_PRESSED_IMAGE).convert_alpha(), (WIDTH / 10, HEIGHT / 10))
+
+rip_cat = pygame.transform.scale(pygame.image.load(RIP_CAT).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
+
+
 game_over_font = pygame.font.Font(None, 80)
+
+
+class Button():
+    def __init__(self, x, y, image) -> None:
+        self.image = start_button_image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.clicked = False
+
+    def draw(self, screen):
+        action = False
+        
+        mouse_pos = pygame.mouse.get_pos()
+
+        if self.rect.collidepoint(mouse_pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                print("press")
+                action = True
+                self.image = start_button_pressed_image
+                self.clicked = True
+
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.image = start_button_image
+            self.clicked = False
+        
+        screen.blit(self.image, self.rect)
+        return action
 
 
 # Definir la clase del jugador
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        # Nuevas propiedades para la animación de caminar
-        self.walk_index = 0
-        self.walk_images_right = walk_right_images
-        self.walk_images_left = walk_left_images
-
-        self.image = self.walk_images_right[0] #el juego empieza con player a la derecha
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.speed = PLAYER_SPEED
-        self.vel_y = 0
-        # self.jump_height = 15
-        self.is_jumping = False
-        self.jump_count = 10  # Inicializar jump_count aquí
-        self.direction = 1
-        self.width = self.image.get_width()
-        self.height = self.image.get_height()
-        self.player_hitbox = pygame.Surface((self.rect.width, self.rect.height))
-        self.player_hitbox.fill(GREEN)
-        self.player_hitbox_rect = self.player_hitbox.get_rect()  # Agregar esta línea
-        # Nueva variable para rastrear la cantidad de saltos realizados
-        self.jump_count = 0
-        self.max_jump_count = 2  # Establece el límite de saltos consecutivos
-        self.score = 0
-        self.healt = 500
-        self.lives = 3
-        self.key_score = 0
+        self.restart(x, y)
 
     def update(self, game_over):
         
@@ -165,7 +173,10 @@ class Player(pygame.sprite.Sprite):
                     player.lives -= 1
                     game_over = -1
                     print(player.lives)
-                    # all_sprites.remove(player)
+            if player.rect.y < 0:
+                player.rect.x = 200
+                player.rect.y = 255
+                    
 
             key_hit = pygame.sprite.spritecollide(self, key_group, True)
             for key in key_hit:
@@ -179,7 +190,7 @@ class Player(pygame.sprite.Sprite):
                 player.lives -= 1
                 game_over = -1
                 player.image = cat_death_image
-                # all_sprites.remove(player)
+                
 
             lava_hit = pygame.sprite.spritecollide(self, lava_group, False)
             for lava in lava_hit:
@@ -188,7 +199,7 @@ class Player(pygame.sprite.Sprite):
                 game_over = -1
                 player.image = cat_death_image
                 self.rect.y -= 2
-                # all_sprites.remove(player)
+                
 
             door_hit = pygame.sprite.spritecollide(self, door_group, False)
             for door in door_hit:
@@ -223,22 +234,53 @@ class Player(pygame.sprite.Sprite):
             self.rect.y -= 5
             if self.rect.y < -80:
                 game_over = 0
-                if self.lives == 0:
-                    print("game over")
-                    print("keys: {0}".format(self.key_score))
-                    print("lives: {0}".format(self.lives))
-                    print("score: {0}".format(self.score))
-                    return
-
+            if self.lives == 0:
+                print("game over")
+                print("keys: {0}".format(self.key_score))
+                print("lives: {0}".format(self.lives))
+                print("score: {0}".format(self.score))
+                return 
         return game_over
     
+    def restart(self, x, y):
+        self.can_shoot = False
+        # Nuevas propiedades para la animación de caminar
+        self.walk_index = 0
+        self.walk_images_right = walk_right_images
+        self.walk_images_left = walk_left_images
+
+        self.image = self.walk_images_right[0] #el juego empieza con player a la derecha
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = PLAYER_SPEED
+        self.vel_y = 0
+        # self.jump_height = 15
+        self.is_jumping = False
+        self.jump_count = 10  # Inicializar jump_count aquí
+        self.direction = 1
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.player_hitbox = pygame.Surface((self.rect.width, self.rect.height))
+        self.player_hitbox.fill(GREEN)
+        self.player_hitbox_rect = self.player_hitbox.get_rect()  # Agregar esta línea
+        # Nueva variable para rastrear la cantidad de saltos realizados
+        self.jump_count = 0
+        self.max_jump_count = 2  # Establece el límite de saltos consecutivos
+        self.score = 0
+        self.healt = 500
+        self.lives = 3
+        self.key_score = 0
+    
     def shoot(self, direction):
-        if direction == 1:
-            miau = Miau(self.rect.right, self.rect.centery - 25, self.direction)
-        else:
-            miau = Miau(self.rect.left - 50, self.rect.centery - 25, self.direction)
-        all_sprites.add(miau)
-        miaus.add(miau)
+        if not self.can_shoot:
+            if direction == 1:
+                miau = Miau(self.rect.right, self.rect.centery - 25, self.direction)
+            else:
+                miau = Miau(self.rect.left - 50, self.rect.centery - 25, self.direction)
+            miau_cat_sound.play()
+            all_sprites.add(miau)
+            miaus.add(miau)
 
 
 class World():
@@ -504,11 +546,11 @@ key_group = pygame.sprite.Group()
 bat_group = pygame.sprite.Group()
 world = World(world_data)
 stars_group = pygame.sprite.Group()
+start_button = Button(WIDTH / 2 - 50, HEIGHT / 2 + 100, start_button_image)
 
 # Crear grupo de sprites y agregar el jugador al grupo
 miaus = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
-# all_sprites.add(player)
 
 # Bucle principal del juego
 running = True
@@ -522,17 +564,18 @@ while running:
             running = False
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
+            if event.key == pygame.K_UP and not player.can_shoot:
                 player.shoot(player.direction)
-                miau_cat_sound.play()
+                player.can_shoot = True
+            else:
+                player.can_shoot = False
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 player.direction = -1  # Si se suelta K_a, la direccion continua a la izquierda
             elif event.key == pygame.K_d:
                 player.direction = 1
-
-
+            
 
     # Actualizar
     door_group.update()
@@ -563,8 +606,7 @@ while running:
 
     if player.lives == 0:
         game_over_text = game_over_font.render("Game Over", True, RED)
-        screen.blit(game_over_text, (WIDTH / 2 - game_over_text.get_width() / 2, HEIGHT / 2 - game_over_text.get_height() / 2))
-
+        screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
 
     world.draw()
     door_group.draw(screen)
@@ -575,21 +617,34 @@ while running:
     stars_group.draw(screen)
     all_sprites.draw(screen)
 
+    if player.lives == 0:
+        # Mueve al jugador hacia abajo hasta que colisione con un tile
+        player.rect.y += 2
+        for tile in world.tile_list:
+            if tile[1].colliderect(player.rect.x, player.rect.y, player.width, player.height):
+                # El jugador ha colisionado con un tile, detén el movimiento hacia abajo
+                player.rect.y = tile[1].top - player.height
+                break
+        player.image = rip_cat
+        if start_button.draw(screen):
+            player.restart(x=200, y= 250)
+            game_over = 0
+
     #Dibujar hitbox
-    for miau in miaus:
-        pygame.draw.rect(screen, RED, miau.rect, 2)
+    # for miau in miaus:
+    #     pygame.draw.rect(screen, RED, miau.rect, 2)
 
-    for fire in fire_group:
-        pygame.draw.rect(screen, WHITE, fire.rect, 2)
+    # for fire in fire_group:
+    #     pygame.draw.rect(screen, WHITE, fire.rect, 2)
 
-    for lava in lava_group:
-        pygame.draw.rect(screen, GRAY, lava.rect, 2)
+    # for lava in lava_group:
+    #     pygame.draw.rect(screen, GRAY, lava.rect, 2)
 
-    for bat in bat_group:
-        pygame.draw.rect(screen, ORANGE, bat.rect, 2)
+    # for bat in bat_group:
+    #     pygame.draw.rect(screen, ORANGE, bat.rect, 2)
 
-    #Dibujar hitbox del jugador
-    pygame.draw.rect(screen, GREEN, player.rect, 2)
+    # #Dibujar hitbox del jugador
+    # pygame.draw.rect(screen, GREEN, player.rect, 2)
 
     # pygame.draw.rect(screen, GREEN, door.rect, 2)
 
