@@ -53,9 +53,7 @@ start_button_pressed_image = pygame.transform.scale(pygame.image.load(START_BUTT
 
 rip_cat = pygame.transform.scale(pygame.image.load(RIP_CAT).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 
-
 game_over_font = pygame.font.Font(None, 80)
-
 
 class Button():
     def __init__(self, x, y, image) -> None:
@@ -127,6 +125,7 @@ class Player(pygame.sprite.Sprite):
 
             # Controlar el salto
             if keys[pygame.K_SPACE] and self.is_jumping == False and self.jump_count < self.max_jump_count:
+                jumping.play()
                 self.vel_y = -15
                 self.is_jumping = True
                 self.jump_count += 1
@@ -162,7 +161,7 @@ class Player(pygame.sprite.Sprite):
             stars_hit = pygame.sprite.spritecollide(self, stars_group, True)
             for star in stars_hit:
                 star_coin_sound.play()
-                self.score += 1
+                self.score += 5
                 print("Puntuación:", self.score)
 
             # Verificar colisiones con enemigos
@@ -171,6 +170,8 @@ class Player(pygame.sprite.Sprite):
                 if player.rect.colliderect(bat.rect):
                     player_death_sound.play()
                     player.lives -= 1
+                    self.score -= 1
+                    self.rect.y -= 2
                     game_over = -1
                     print(player.lives)
             if player.rect.y < 0:
@@ -182,20 +183,24 @@ class Player(pygame.sprite.Sprite):
             for key in key_hit:
                 key_sound.play()
                 self.key_score += 1
+                self.score += 10
                 print("Llaves: {0}".format(self.key_score))
 
             fire_hit = pygame.sprite.spritecollide(self, fire_group, False)
             for fire in fire_hit:
                 player_death_sound.play()
                 player.lives -= 1
+                self.score -= 1
                 game_over = -1
                 player.image = cat_death_image
+                self.rect.y -= 2
                 
 
             lava_hit = pygame.sprite.spritecollide(self, lava_group, False)
             for lava in lava_hit:
                 player_death_sound.play(1)
                 player.lives -= 1
+                self.score -= 1
                 game_over = -1
                 player.image = cat_death_image
                 self.rect.y -= 2
@@ -204,10 +209,11 @@ class Player(pygame.sprite.Sprite):
             door_hit = pygame.sprite.spritecollide(self, door_group, False)
             for door in door_hit:
                 if self.key_score > 0:
-                    door_open_sound.play(1)
+                    door_open_sound.play()
                 else:
                     player_death_sound.play()
                     player.lives -= 1
+                    self.score -= 1
                     game_over = -1
                     player.image = cat_death_image
                     self.rect.y -= 2
@@ -229,12 +235,13 @@ class Player(pygame.sprite.Sprite):
                 self.rect.y = 0
                     
         elif game_over == -1:
-            # print(game_over)
             self.image = cat_death_image
             self.rect.y -= 5
             if self.rect.y < -80:
                 game_over = 0
-            if self.lives == 0:
+            if self.lives <= 0:
+                pygame.mixer.music.stop()
+                game_over_fx.play()
                 print("game over")
                 print("keys: {0}".format(self.key_score))
                 print("lives: {0}".format(self.lives))
@@ -285,6 +292,46 @@ class Player(pygame.sprite.Sprite):
 
 class World():
     def __init__(self, data) -> None:
+        self.tile_list = []
+        #load images
+        row_count = 0
+        for row in data:
+            col_count = 0
+            for tile in row:
+                if tile == 4:
+                    img = wall_image
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 15:
+                    img = tree_image
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 5:
+                    door = Door(col_count * tile_size, row_count * tile_size + 15)
+                    door_group.add(door)
+                if tile == 19:
+                    key = Key(col_count * tile_size, row_count * tile_size + 15)
+                    key_group.add(key)
+                if tile == 16:
+                    bat = Bat(col_count * tile_size, row_count * tile_size, random.choice([-1, 1]) * BAT_SPEED)
+                    bat_group.add(bat)
+                if tile == 2:
+                    lava = Lava(col_count * tile_size, row_count * tile_size)
+                    lava_group.add(lava)
+                if tile == 6:
+                    fire = Fire(col_count * tile_size, row_count + 9.45 * tile_size, FIRE_SPEED)
+                    fire_group.add(fire)
+                    
+                col_count += 1
+            row_count += 1
+            
+    def restart(self, data):
         self.tile_list = []
         #load images
         row_count = 0
@@ -388,9 +435,6 @@ class Lava(pygame.sprite.Sprite):
         if self.lava_index >= len(self.lava_images) * 10:
             self.lava_index = 0
 
-        # Renderizar la hitbox de la estrella
-        # screen.blit(self.lava_hitbox, self.lava_hitbox)
-
 class Fire(pygame.sprite.Sprite):
     def __init__(self, x, y, speed) -> None:
         super().__init__()
@@ -413,11 +457,6 @@ class Fire(pygame.sprite.Sprite):
         self.rect.y -= 2
         if self.rect.y == 600:
             self.rect.y = 950
-        # self.rect.y += self.speed
-        # self.move_couter += 1
-        # if abs(self.move_couter) > 12:
-        #     self.speed *= -1
-        #     self.move_couter *= -1
 
         self.fire_index += 1
         if self.fire_index >= len(self.fire_images) * 10:
@@ -533,9 +572,18 @@ class Miau(pygame.sprite.Sprite):
             # por ejemplo, eliminar el proyectil y reducir la vida del enemigo
             bat_collision_sound.play()
             self.kill()
+            player.score += 5
             star = Star(enemy.rect.x, enemy.rect.y)
             all_sprites.add(star)
             stars_group.add(star)
+
+def empty_groups():
+    bat_group.empty()
+    key_group.empty()
+    stars_group.empty()
+    fire_group.empty()
+    lava_group.empty()
+    door_group.empty()
 
 # Crear jugador
 player = Player(x=200, y= 350)
@@ -617,20 +665,25 @@ while running:
     stars_group.draw(screen)
     all_sprites.draw(screen)
 
-    if player.lives == 0:
+    if player.lives <= 0:
         # Mueve al jugador hacia abajo hasta que colisione con un tile
+        player.image = rip_cat
         player.rect.y += 2
         for tile in world.tile_list:
             if tile[1].colliderect(player.rect.x, player.rect.y, player.width, player.height):
                 # El jugador ha colisionado con un tile, detén el movimiento hacia abajo
                 player.rect.y = tile[1].top - player.height
                 break
-        player.image = rip_cat
+            
         if start_button.draw(screen):
+            pygame.mixer.music.play(-1)
+            empty_groups()
+            world.restart(world_data)
             player.restart(x=200, y= 250)
             game_over = 0
+            
 
-    #Dibujar hitbox
+    # #Dibujar hitbox
     # for miau in miaus:
     #     pygame.draw.rect(screen, RED, miau.rect, 2)
 
@@ -645,8 +698,6 @@ while running:
 
     # #Dibujar hitbox del jugador
     # pygame.draw.rect(screen, GREEN, player.rect, 2)
-
-    # pygame.draw.rect(screen, GREEN, door.rect, 2)
 
     screen.blit(player.image, player.rect)
 
