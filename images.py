@@ -24,9 +24,38 @@ CAT_DEATH_IMAGE = "images/cat_death_01.png"
 
 RIP_CAT = "images/rip_cat.png"
 
-LAVA_IMAGE = "images/piso01.png"
-
 DOOR_IMAGE = "images/door.png"
+
+ICE_LEFT_PLATFORM = "images/ice_left_platform.png"
+
+ICE_RIGHT_PLATFORM = "images/ice_right_platform.png"
+
+ICE_BLOCK = "images/ice_block.png"
+
+ICE_MIDDLE_FLOOR = "images/ice_floor_middle.png"
+
+LAVA_FLOOR = "images/piso01.png"
+
+BOOK_ITEM_IMAGE = "images/spell-book.png"
+
+WATER_IMAGES_LIST = ["images/water_01.png",
+                    "images/water_02.png",
+                    "images/water_03.png",
+                    ]
+
+WORM_IMAGE_LIST = ["images/worm_right_01.png",
+                "images/worm_right_02.png",
+                "images/worm_right_03.png"
+                ]
+
+PUMPKIN_IMAGE_LIST = ["images/calabaza_01.png",
+                    "images/calabaza_02.png",
+                    ]
+
+LAVA_FLOOR_IMAGES_LIST = ["images/lava_floor_01.png",
+                    "images/lava_floor_02.png",
+                    "images/lava_floor_03.png",
+                    ]
 
 START_BUTTON_IMAGE = "images/start_button.png"
 START_BUTTON_PRESSED_IMAGE = "images/start_button_pressed.png"
@@ -36,7 +65,7 @@ BAT_LEFT_IMAGES_LIST = ["images/bat_left_01.png",
                         "images/bat_left_03.png",
                         ]
 
-LAVA_IMAGES_LIST = ["images/piso_lava_01.png",
+LAVA_FIRE_IMAGES_LIST = ["images/piso_lava_01.png",
                     "images/piso_lava_02.png",
                     "images/piso_lava_03.png",
                     "images/piso_lava_02.png",

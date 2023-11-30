@@ -1,12 +1,13 @@
 import pygame
 import sys
+import csv
 
 # from pygame.sprite import _Group
 from constants import *
 import random
 from images import *
 from sounds import *
-from maps import *
+# from maps import *
 
 # Inicializar Pygame
 pygame.init()
@@ -21,6 +22,12 @@ pygame.display.set_icon(icon)
 # define variables
 tile_size = 80
 game_over = 0
+COLS = 16
+ROWS = 12
+level = 2
+max_level = 3
+
+
 
 miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 miau_left_image = pygame.transform.flip(miau_right_image, True, False)
@@ -38,7 +45,13 @@ bat_left_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha
 bat_right_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(), 
                         (WIDTH // 17, HEIGHT // 17)), True, False) for image in BAT_LEFT_IMAGES_LIST]
 
-lava_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 22)) for image in LAVA_IMAGES_LIST]
+lava_fire_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 22)) for image in LAVA_FIRE_IMAGES_LIST]
+
+lava_floor_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 12)) for image in LAVA_FLOOR_IMAGES_LIST]
+
+worm_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 22)) for image in WORM_IMAGE_LIST]
+
+pumpkin_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 20, HEIGHT / 16)) for image in PUMPKIN_IMAGE_LIST]
 
 fire_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 20, HEIGHT / 10)) for image in FIRE_IMAGES_LIST]
 
@@ -47,6 +60,18 @@ key_image = pygame.transform.scale(pygame.image.load(KEY).convert_alpha(), (WIDT
 star_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 24, HEIGHT / 20)) for image in STARS_LIST]
 
 door_image = pygame.transform.scale(pygame.image.load(DOOR_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
+
+spell_book_image = pygame.transform.scale(pygame.image.load(BOOK_ITEM_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
+
+ice_right_platform_image = pygame.transform.scale(pygame.image.load(ICE_RIGHT_PLATFORM).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
+
+ice_block_image = pygame.transform.scale(pygame.image.load(ICE_BLOCK).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
+
+ice_left_platform_image = pygame.transform.scale(pygame.image.load(ICE_LEFT_PLATFORM).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
+
+ice_middle_floor_image = pygame.transform.scale(pygame.image.load(ICE_MIDDLE_FLOOR).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
+
+water_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 10)) for image in WATER_IMAGES_LIST]
 
 start_button_image = pygame.transform.scale(pygame.image.load(START_BUTTON_IMAGE).convert_alpha(), (WIDTH / 10, HEIGHT / 10))
 start_button_pressed_image = pygame.transform.scale(pygame.image.load(START_BUTTON_PRESSED_IMAGE).convert_alpha(), (WIDTH / 10, HEIGHT / 10))
@@ -164,6 +189,12 @@ class Player(pygame.sprite.Sprite):
                 self.score += 5
                 print("Puntuación:", self.score)
 
+            pumpkin_hit = pygame.sprite.spritecollide(self, pumpkin_group, True)
+            for pumpkin in pumpkin_hit:
+                star_coin_sound.play()
+                self.score += 5
+                print("Puntuación:", self.score)
+
             # Verificar colisiones con enemigos
             bat_hit = pygame.sprite.spritecollide(player, bat_group, False)
             for bat in bat_hit:
@@ -186,6 +217,14 @@ class Player(pygame.sprite.Sprite):
                 self.score += 10
                 print("Llaves: {0}".format(self.key_score))
 
+            spell_book_hit = pygame.sprite.spritecollide(self, spell_book_group, True)
+            for spell_book in spell_book_hit:
+                key_sound.play()
+                self.spell_book += 1
+                self.key_score += 1
+                self.score += 10
+                print("Llaves: {0}".format(self.key_score))
+
             fire_hit = pygame.sprite.spritecollide(self, fire_group, False)
             for fire in fire_hit:
                 player_death_sound.play()
@@ -194,24 +233,52 @@ class Player(pygame.sprite.Sprite):
                 game_over = -1
                 player.image = cat_death_image
                 self.rect.y -= 2
-                
 
-            lava_hit = pygame.sprite.spritecollide(self, lava_group, False)
-            for lava in lava_hit:
+            water_hit = pygame.sprite.spritecollide(self, water_group, False)
+            for water in water_hit:
                 player_death_sound.play(1)
                 player.lives -= 1
                 self.score -= 1
                 game_over = -1
                 player.image = cat_death_image
                 self.rect.y -= 2
-                
 
-            door_hit = pygame.sprite.spritecollide(self, door_group, False)
-            for door in door_hit:
+            lava_fire_hit = pygame.sprite.spritecollide(self, lava_fire_group, False)
+            for lava in lava_fire_hit:
+                if spell_book == 1:
+                    spell_book = 0
+                else:
+                    player_death_sound.play(1)
+                    player.lives -= 1
+                    self.score -= 1
+                    game_over = -1
+                    player.image = cat_death_image
+                    self.rect.y -= 2
+                
+            exit_hit = pygame.sprite.spritecollide(self, exit_group, False)
+            for exit in exit_hit:
                 if self.key_score > 0:
                     door_open_sound.play()
+                    game_over = 1
                 else:
                     player_death_sound.play()
+                    player.lives -= 1
+                    self.score -= 1
+                    game_over = -1
+                    player.image = cat_death_image
+                    self.rect.y -= 2
+
+            lava_floor_hit = pygame.sprite.spritecollide(self, lava_floor_group, False)
+            for lava in lava_floor_hit:
+                if self.spell_book == 1:
+                    print(self.spell_book)
+                    # Ajustar la posición del jugador y reiniciar el salto
+                    self.rect.y = lava.rect.top - self.height
+                    # self.vel_y = 0
+                    self.is_jumping = False
+                    self.jump_count = 0
+                else:
+                    player_death_sound.play(1)
                     player.lives -= 1
                     self.score -= 1
                     game_over = -1
@@ -278,6 +345,7 @@ class Player(pygame.sprite.Sprite):
         self.healt = 500
         self.lives = 3
         self.key_score = 0
+        self.spell_book = 0
     
     def shoot(self, direction):
         if not self.can_shoot:
@@ -312,9 +380,49 @@ class World():
                     img_rect.y = row_count * tile_size
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
+                if tile == 7:
+                    img = ice_middle_floor_image
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 11:
+                    img = ice_block_image
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 8:
+                    img = ice_left_platform_image
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 13:
+                    img = ice_right_platform_image
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 14:
+                    spell_book = SpellBook(col_count * tile_size, row_count * tile_size)
+                    spell_book_group.add(spell_book)
+                if tile == 9:
+                    water = Water(col_count * tile_size, row_count * tile_size)
+                    water_group.add(water)
+                if tile == 0:
+                    lava_floor = LavaFloor(col_count * tile_size, row_count * tile_size)
+                    lava_floor_group.add(lava_floor)
+                if tile == 20:
+                    pumpkin = Pumpkin(col_count * tile_size, row_count * tile_size + 25)
+                    pumpkin_group.add(pumpkin)
                 if tile == 5:
-                    door = Door(col_count * tile_size, row_count * tile_size + 15)
-                    door_group.add(door)
+                    door = Exit(col_count * tile_size, row_count * tile_size + 15)
+                    exit_group.add(door)
                 if tile == 19:
                     key = Key(col_count * tile_size, row_count * tile_size + 15)
                     key_group.add(key)
@@ -323,11 +431,10 @@ class World():
                     bat_group.add(bat)
                 if tile == 2:
                     lava = Lava(col_count * tile_size, row_count * tile_size)
-                    lava_group.add(lava)
+                    lava_fire_group.add(lava)
                 if tile == 6:
                     fire = Fire(col_count * tile_size, row_count + 9.45 * tile_size, FIRE_SPEED)
                     fire_group.add(fire)
-                    
                 col_count += 1
             row_count += 1
             
@@ -352,9 +459,49 @@ class World():
                     img_rect.y = row_count * tile_size
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
+                if tile == 7:
+                    img = ice_middle_floor_image
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 11:
+                    img = ice_block_image
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 8:
+                    img = ice_left_platform_image
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 13:
+                    img = ice_right_platform_image
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 14:
+                    spell_book = SpellBook(col_count * tile_size, row_count * tile_size)
+                    spell_book_group.add(spell_book)
+                if tile == 9:
+                    water = Water(col_count * tile_size, row_count * tile_size)
+                    water_group.add(water)
+                if tile == 0:
+                    lava_floor = LavaFloor(col_count * tile_size, row_count * tile_size)
+                    lava_floor_group.add(lava_floor)
+                if tile == 20:
+                    pumpkin = Pumpkin(col_count * tile_size, row_count * tile_size + 25)
+                    fire_group.add(pumpkin)
                 if tile == 5:
-                    door = Door(col_count * tile_size, row_count * tile_size + 15)
-                    door_group.add(door)
+                    door = Exit(col_count * tile_size, row_count * tile_size + 15)
+                    exit_group.add(door)
                 if tile == 19:
                     key = Key(col_count * tile_size, row_count * tile_size + 15)
                     key_group.add(key)
@@ -363,11 +510,10 @@ class World():
                     bat_group.add(bat)
                 if tile == 2:
                     lava = Lava(col_count * tile_size, row_count * tile_size)
-                    lava_group.add(lava)
+                    lava_fire_group.add(lava)
                 if tile == 6:
                     fire = Fire(col_count * tile_size, row_count + 9.45 * tile_size, FIRE_SPEED)
                     fire_group.add(fire)
-                    
                 col_count += 1
             row_count += 1
 
@@ -393,29 +539,124 @@ class Key(pygame.sprite.Sprite):
         # Renderizar la hitbox de la llave
         screen.blit(self.key_hitbox, self.key_hitbox_rect)
 
-class Door(pygame.sprite.Sprite):
+class SpellBook(pygame.sprite.Sprite):
+    def __init__(self, x, y) -> None:
+        super().__init__()
+        self.image = spell_book_image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y + 15  # Ajustar la posición vertical según sea necesario
+        self.spell_book_hitbox = pygame.Surface((self.rect.width, self.rect.height))
+        self.spell_book_hitbox.fill(RED)
+        self.spell_book_hitbox_rect = self.spell_book_hitbox.get_rect()
+
+    def update(self):
+        # Actualizar la posición de la hitbox de la llave
+        self.spell_book_hitbox_rect.topleft = self.rect.topleft
+        # Renderizar la hitbox de la llave
+        screen.blit(self.spell_book_hitbox, self.spell_book_hitbox_rect)
+
+class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y) -> None:
         super().__init__()
         self.image = door_image
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y  # Ajustar la posición vertical según sea necesario
-        self.door_hitbox = pygame.Surface((self.rect.width, self.rect.height))
-        self.door_hitbox.fill(RED)
-        self.door_hitbox_rect = self.door_hitbox.get_rect()
+        self.exit_hitbox = pygame.Surface((self.rect.width, self.rect.height))
+        self.exit_hitbox.fill(RED)
+        self.exit_hitbox_rect = self.exit_hitbox.get_rect()
 
     def update(self):
         # Actualizar la posición de la hitbox de la llave
-        self.door_hitbox_rect.topleft = self.rect.topleft
+        self.exit_hitbox_rect.topleft = self.rect.topleft
         # Renderizar la hitbox de la llave
-        screen.blit(self.door_hitbox, self.door_hitbox_rect)
+        screen.blit(self.exit_hitbox, self.exit_hitbox_rect)
+
+class Pumpkin(pygame.sprite.Sprite):
+    def __init__(self, x, y) -> None:
+        super().__init__()
+        self.pumpkin_index = 0
+        self.pumpkin_images = pumpkin_images
+        self.image = pumpkin_images[0]
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y # Ajustar la posición vertical según sea necesario
+        self.pumpkin_hitbox = pygame.Surface((self.rect.width, self.rect.height))
+        self.pumpkin_hitbox.fill(RED)
+        self.pumpkin_hitbox_rect = self.pumpkin_hitbox.get_rect()
+
+    def update(self):
+        # Actualizar la posición de la hitbox de la estrella
+        # self.lava_hitbox.topleft = self.rect.topleft
+
+        # Cambiar la imagen de la estrella según el índice
+        self.image = self.pumpkin_images[self.pumpkin_index // 10]
+
+        # Incrementar el índice para cambiar la imagen en el próximo ciclo
+        self.pumpkin_index += 1
+        if self.pumpkin_index >= len(self.pumpkin_images) * 10:
+            self.pumpkin_index = 0
+        screen.blit(self.pumpkin_hitbox, self.pumpkin_hitbox_rect)
+
+class Water(pygame.sprite.Sprite):
+    def __init__(self, x, y) -> None:
+        super().__init__()
+        self.water_index = 0
+        self.water_images = water_images
+        self.image = water_images[0]
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y # Ajustar la posición vertical según sea necesario
+        self.water_hitbox = pygame.Surface((self.rect.width, self.rect.height))
+        self.water_hitbox.fill(RED)
+        self.water_hitbox_rect = self.water_hitbox.get_rect()
+
+    def update(self):
+        # Actualizar la posición de la hitbox de la estrella
+        # self.lava_hitbox.topleft = self.rect.topleft
+
+        # Cambiar la imagen de la estrella según el índice
+        self.image = self.water_images[self.water_index // 10]
+
+        # Incrementar el índice para cambiar la imagen en el próximo ciclo
+        self.water_index += 1
+        if self.water_index >= len(self.water_images) * 10:
+            self.water_index = 0
+        screen.blit(self.water_hitbox, self.water_hitbox_rect)
+
+class LavaFloor(pygame.sprite.Sprite):
+    def __init__(self, x, y) -> None:
+        super().__init__()
+        self.lava_floor_index = 0
+        self.lava_floor_images = lava_floor_images
+        self.image = lava_floor_images[0]
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y # Ajustar la posición vertical según sea necesario
+        self.lava_floor_hitbox = pygame.Surface((self.rect.width, self.rect.height))
+        self.lava_floor_hitbox.fill(RED)
+        self.lava_floor_hitbox_rect = self.lava_floor_hitbox.get_rect()
+
+    def update(self):
+        # Actualizar la posición de la hitbox de la estrella
+        # self.lava_hitbox.topleft = self.rect.topleft
+
+        # Cambiar la imagen de la estrella según el índice
+        self.image = self.lava_floor_images[self.lava_floor_index // 10]
+
+        # Incrementar el índice para cambiar la imagen en el próximo ciclo
+        self.lava_floor_index += 1
+        if self.lava_floor_index >= len(self.lava_floor_images) * 10:
+            self.lava_floor_index = 0
+        screen.blit(self.lava_floor_hitbox, self.lava_floor_hitbox_rect)
 
 class Lava(pygame.sprite.Sprite):
     def __init__(self, x, y) -> None:
         super().__init__()
-        self.lava_index = 0
-        self.lava_images = lava_images
-        self.image = lava_images[0]
+        self.lava_fire_index = 0
+        self.lava_fire_images = lava_fire_images
+        self.image = lava_fire_images[0]
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y + 13 # Ajustar la posición vertical según sea necesario
@@ -428,12 +669,12 @@ class Lava(pygame.sprite.Sprite):
         # self.lava_hitbox.topleft = self.rect.topleft
 
         # Cambiar la imagen de la estrella según el índice
-        self.image = self.lava_images[self.lava_index // 10]
+        self.image = self.lava_fire_images[self.lava_fire_index // 10]
 
         # Incrementar el índice para cambiar la imagen en el próximo ciclo
-        self.lava_index += 1
-        if self.lava_index >= len(self.lava_images) * 10:
-            self.lava_index = 0
+        self.lava_fire_index += 1
+        if self.lava_fire_index >= len(self.lava_fire_images) * 10:
+            self.lava_fire_index = 0
 
 class Fire(pygame.sprite.Sprite):
     def __init__(self, x, y, speed) -> None:
@@ -495,6 +736,43 @@ class Star(pygame.sprite.Sprite):
 
         # Renderizar la hitbox de la estrella
         screen.blit(self.star_hitbox, self.star_hitbox_rect)
+
+class Worm(pygame.sprite.Sprite):
+    def __init__(self, x, y, speed) -> None:
+        super().__init__()
+        self.worm_index = 0
+        self.worm_left_images = worm_images
+        self.image = worm_images[0]
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = speed
+        self.move_couter = 0
+        self.direction = 0
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.worm_hitbox = pygame.Surface((self.rect.width, self.rect.height))
+        self.worm_hitbox.fill(GREEN)
+        self.worm_hitbox_rect = self.worm_hitbox.get_rect()  # Agregar esta línea
+        self.player_hitbox = self.worm_hitbox.get_rect()  # Agregar esta línea
+
+    def update(self):
+        # Lógica de actualización del bat (movimiento por el eje x)
+        self.rect.x += self.speed
+        self.move_couter += 1
+        if abs(self.move_couter) > 50:
+            self.speed *= -1
+            self.move_couter *= -1
+
+                # Cambiar la imagen del murciélago según la dirección
+        if self.speed > 0:  # Si el murciélago se mueve hacia la derecha
+            self.image = self.worm_images[self.worm_index // 5]
+        else:  # Si el murciélago se mueve hacia la izquierda
+            self.image = self.worm_images[self.worm_index // 5]
+
+        self.worm_index += 1
+        if self.worm_index >= len(self.worm_images) * 5:
+            self.worm_index = 0
 
 class Bat(pygame.sprite.Sprite):
     def __init__(self, x, y, speed) -> None:
@@ -578,18 +856,40 @@ class Miau(pygame.sprite.Sprite):
             stars_group.add(star)
 
 def empty_groups():
+    spell_book_group.empty()
+    water_group.empty()
+    lava_floor_group.empty()
+    worm_group.empty()
+    pumpkin_group.empty()
     bat_group.empty()
     key_group.empty()
     stars_group.empty()
     fire_group.empty()
-    lava_group.empty()
-    door_group.empty()
+    lava_fire_group.empty()
+    exit_group.empty()
+
+world_data = []
+for row in range(ROWS):
+    r = [-1] * COLS
+    world_data.append(r)
+
+with open("level{0}_data.csv".format(level), newline="") as csvfile:
+    reader = csv.reader(csvfile, delimiter=",")
+    for x, row in enumerate(reader):
+        for y, tile in enumerate(row):
+            world_data[x][y] = int(tile)
+print(world_data)
 
 # Crear jugador
 player = Player(x=200, y= 350)
-door_group = pygame.sprite.Group()
+spell_book_group = pygame.sprite.Group()
+water_group = pygame.sprite.Group()
+lava_floor_group = pygame.sprite.Group()
+pumpkin_group = pygame.sprite.Group()
+worm_group = pygame.sprite.Group()
+exit_group = pygame.sprite.Group()
 fire_group = pygame.sprite.Group()
-lava_group = pygame.sprite.Group()
+lava_fire_group = pygame.sprite.Group()
 key_group = pygame.sprite.Group()
 bat_group = pygame.sprite.Group()
 world = World(world_data)
@@ -626,9 +926,14 @@ while running:
             
 
     # Actualizar
-    door_group.update()
+    spell_book_group.update()
+    water_group.update()
+    lava_floor_group.update()
+    worm_group.update()
+    pumpkin_group.update()
+    exit_group.update()
     fire_group.update()
-    lava_group.update()
+    lava_fire_group.update()
     key_group.update()
     bat_group.update()
     all_sprites.update()
@@ -657,9 +962,14 @@ while running:
         screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
 
     world.draw()
-    door_group.draw(screen)
+    spell_book_group.draw(screen)
+    water_group.draw(screen)
+    lava_floor_group.draw(screen)
+    worm_group.draw(screen)
+    pumpkin_group.draw(screen)
+    exit_group.draw(screen)
     fire_group.draw(screen)
-    lava_group.draw(screen)
+    lava_fire_group.draw(screen)
     key_group.draw(screen)
     bat_group.draw(screen)
     stars_group.draw(screen)
@@ -681,6 +991,21 @@ while running:
             world.restart(world_data)
             player.restart(x=200, y= 250)
             game_over = 0
+
+    if game_over == 1:
+        level += 1
+        if level <= max_level:
+            world_data = [[-1] * COLS for _ in range(ROWS)]
+            with open("level{0}_data.csv".format(level), newline="") as csvfile:
+                reader = csv.reader(csvfile, delimiter=",")
+                for x, row in enumerate(reader):
+                    for y, tile in enumerate(row):
+                        world_data[x][y] = int(tile)
+            world.restart(world_data)
+            player.restart(x=200, y= 250)
+            game_over = 0
+        else:
+            pass
             
 
     # #Dibujar hitbox
