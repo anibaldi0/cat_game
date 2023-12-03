@@ -21,6 +21,12 @@ JUMP_FX = "sounds/player_jumping.wav"
 
 GAME_OVER_FX = "sounds/arcade_game_over.wav"
 
+WIN_GAME = "sounds/video_game_win.wav"
+
+
+
+win_game = pygame.mixer.Sound(WIN_GAME)
+win_game.set_volume(0.5)
 
 game_over_fx = pygame.mixer.Sound(GAME_OVER_FX)
 game_over_fx.set_volume(0.1)

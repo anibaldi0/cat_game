@@ -23,7 +23,7 @@ tile_size = 80
 game_over = 0
 COLS = 16
 ROWS = 12
-level = 3
+level = 2
 max_level = 3
 
 
@@ -48,8 +48,6 @@ lava_fire_images = [pygame.transform.scale(pygame.image.load(image).convert_alph
 
 lava_floor_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 14)) for image in LAVA_FLOOR_IMAGES_LIST]
 
-ice_lava_floor_image = pygame.transform.scale(pygame.image.load(ICE_LAVA_FLOOR).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
-
 worm_left_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 22)) for image in WORM_IMAGE_LIST]
 worm_right_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(), 
                         (WIDTH // 16, HEIGHT // 22)), True, False) for image in WORM_IMAGE_LIST]
@@ -64,7 +62,7 @@ star_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), 
 
 door_image = pygame.transform.scale(pygame.image.load(DOOR_IMAGE).convert_alpha(), (WIDTH / 22, HEIGHT / 16))
 
-spell_book_image = pygame.transform.scale(pygame.image.load(BOOK_ITEM_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
+spell_book_image = pygame.transform.scale(pygame.image.load(BOOK_ITEM_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 
 ice_right_platform_image = pygame.transform.scale(pygame.image.load(ICE_RIGHT_PLATFORM).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
 
@@ -85,7 +83,7 @@ rip_cat = pygame.transform.scale(pygame.image.load(RIP_CAT).convert_alpha(), (WI
 
 game_over_font = pygame.font.Font(None, 80)
 
-class Button(pygame.sprite.Sprite):
+class Button():
     def __init__(self, x, y, image) -> None:
         self.image = start_button_image
         self.rect = self.image.get_rect()
@@ -95,7 +93,9 @@ class Button(pygame.sprite.Sprite):
 
     def draw(self, screen):
         action = False
+        
         mouse_pos = pygame.mouse.get_pos()
+
         if self.rect.collidepoint(mouse_pos):
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
                 print("press")
@@ -208,6 +208,7 @@ class Player(pygame.sprite.Sprite):
                     player_death_sound.play()
                     player.lives -= 1
                     self.score -= 1
+                    self.rect.y -= 2
                     game_over = -1
                     print(player.lives)
             if player.rect.y < 0:
@@ -220,6 +221,7 @@ class Player(pygame.sprite.Sprite):
                     player_death_sound.play()
                     player.lives -= 1
                     self.score -= 1
+                    self.rect.y -= 2
                     game_over = -1
                     print(player.lives)
             if player.rect.y < 0:
@@ -228,54 +230,68 @@ class Player(pygame.sprite.Sprite):
                     
             # Verificar colisiones con estrellas
             stars_hit = pygame.sprite.spritecollide(self, stars_group, True)
-            if stars_hit:
+            for star in stars_hit:
                 star_coin_sound.play()
                 self.score += 5
                 print("Puntuación:", self.score)
 
             pumpkin_hit = pygame.sprite.spritecollide(self, pumpkin_group, True)
-            if pumpkin_hit:
+            for pumpkin in pumpkin_hit:
                 star_coin_sound.play()
                 self.score += 5
                 print("Puntuación:", self.score)
 
             key_hit = pygame.sprite.spritecollide(self, key_group, True)
-            if key_hit:
+            for key in key_hit:
                 key_sound.play()
                 self.key_score += 1
                 self.score += 10
                 print("Llaves: {0}".format(self.key_score))
 
             spell_book_hit = pygame.sprite.spritecollide(self, spell_book_group, True)
-            if spell_book_hit:
+            for spell_book in spell_book_hit:
                 key_sound.play()
                 self.spell_book += 1
                 self.score += 10
                 print("Llaves: {0}".format(self.key_score))
 
             fire_hit = pygame.sprite.spritecollide(self, fire_group, False)
-            if fire_hit:
+            for fire in fire_hit:
                 player_death_sound.play()
                 player.lives -= 1
                 self.score -= 1
                 game_over = -1
+                player.image = cat_death_image
+                self.rect.y -= 2
 
             water_hit = pygame.sprite.spritecollide(self, water_group, False)
-            if water_hit:
-                player_death_sound.play()
+            for water in water_hit:
+                player_death_sound.play(1)
                 player.lives -= 1
                 self.score -= 1
                 game_over = -1
+                player.image = cat_death_image
+                self.rect.y -= 2
 
             lava_fire_hit = pygame.sprite.spritecollide(self, lava_fire_group, False)
-            if lava_fire_hit:
-                    player_death_sound.play()
+            for lava in lava_fire_hit:
+                if self.spell_book == 1:
+                    print(self.spell_book)
+                    # Ajustar la posición del jugador y reiniciar el salto
+                    self.rect.y = lava.rect.top - self.height
+                    # self.vel_y = 0
+                    self.is_jumping = False
+                    self.jump_count = 0
+                else:
+                    player_death_sound.play(1)
                     player.lives -= 1
                     self.score -= 1
                     game_over = -1
+                    player.image = cat_death_image
+                    self.rect.y -= 2
                 
             exit_hit = pygame.sprite.spritecollide(self, exit_group, False)
-            if exit_hit:
+            for exit in exit_hit:
                 if self.key_score > 0:
                     door_open_sound.play()
                     game_over = 1
@@ -284,6 +300,8 @@ class Player(pygame.sprite.Sprite):
                     player.lives -= 1
                     self.score -= 2
                     game_over = -1
+                    player.image = cat_death_image
+                    self.rect.y -= 2
 
             lava_floor_hit = pygame.sprite.spritecollide(self, lava_floor_group, False)
             for lava in lava_floor_hit:
@@ -291,13 +309,19 @@ class Player(pygame.sprite.Sprite):
                     print(self.spell_book)
                     # Ajustar la posición del jugador y reiniciar el salto
                     self.rect.y = lava.rect.top - self.height
+                    # self.vel_y = 0
                     self.is_jumping = False
                     self.jump_count = 0
                 else:
-                    player_death_sound.play()
+                    player_death_sound.play(1)
                     player.lives -= 1
                     self.score -= 1
                     game_over = -1
+                    player.image = cat_death_image
+                    self.rect.y -= 2
+
+                
+
 
             #coordenadas de player
             self.rect.x += dx
@@ -432,10 +456,10 @@ class World():
                     worm = Worm(col_count * tile_size, row_count * tile_size + 35, 6)
                     worm_group.add(worm)
                 if tile == 14:
-                    spell_book = SpellBook(col_count * tile_size, row_count * tile_size - 10)
+                    spell_book = SpellBook(col_count * tile_size, row_count * tile_size)
                     spell_book_group.add(spell_book)
                 if tile == 9:
-                    water = Water(col_count * tile_size, row_count * tile_size + 15)
+                    water = Water(col_count * tile_size, row_count * tile_size)
                     water_group.add(water)
                 if tile == 0:
                     lava_floor = LavaFloor(col_count * tile_size, row_count * tile_size + 10)
@@ -611,7 +635,6 @@ class LavaFloor(pygame.sprite.Sprite):
         # self.lava_hitbox.topleft = self.rect.topleft
 
         # Cambiar la imagen de la estrella según el índice
-        
         self.image = self.lava_floor_images[self.lava_floor_index // 10]
 
         # Incrementar el índice para cambiar la imagen en el próximo ciclo
@@ -821,7 +844,7 @@ class Miau(pygame.sprite.Sprite):
             self.kill()
             player.score += 5
             star = Star(enemy.rect.x, enemy.rect.y)
-            # all_sprites.add(star)
+            all_sprites.add(star)
             stars_group.add(star)
 
         worm_hit = pygame.sprite.spritecollide(self, worm_group, True)
@@ -832,7 +855,7 @@ class Miau(pygame.sprite.Sprite):
             self.kill()
             player.score += 5
             star = Star(worm.rect.x, worm.rect.y - 25)
-            # all_sprites.add(star)
+            all_sprites.add(star)
             stars_group.add(star)
 
 def empty_groups():
@@ -885,6 +908,7 @@ all_sprites = pygame.sprite.Group()
 # Bucle principal del juego
 running = True
 while running:
+
     game_over = player.update(game_over)
 
     # Manejo de eventos
@@ -942,21 +966,21 @@ while running:
     font = pygame.font.Font(None, 36)  # Puedes ajustar el tamaño de la fuente según tus preferencias
 
     spell_book_score = font.render("Spell Book: {0}".format(player.spell_book), True, GOLD)
-    screen.blit(spell_book_score, (450, 10))
+    screen.blit(spell_book_score, (10, 130))
 
     # Renderizar texto para Score
     score_text = font.render("Score: {0}".format(player.score), True, GOLD)
-    screen.blit(score_text, (150, 10))
+    screen.blit(score_text, (10, 10))
 
     # Renderizar texto para Lives
-    lives_text = font.render("Lives: {0}".format(int(player.lives)), True, GOLD)
-    screen.blit(lives_text, (300, 10))
+    lives_text = font.render("Lives: {0}".format(player.lives), True, GOLD)
+    screen.blit(lives_text, (10, 50))
 
     # Renderizar texto para Keys
     keys_text = font.render("Keys: {0}".format(player.key_score), True, GOLD)
-    screen.blit(keys_text, (650, 10))
+    screen.blit(keys_text, (10, 90))
 
-    if player.lives <= 0:
+    if player.lives == 0:
         game_over_text = game_over_font.render("Game Over", True, RED)
         screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
 
@@ -977,33 +1001,20 @@ while running:
             player.restart(x=200, y= 250)
             game_over = 0
 
-    if game_over == 1:
-        previous_lives = player.lives
-        previous_score = player.score
+    if game_over == 1: 
         level += 1
-        empty_groups()
         if level <= max_level:
             world_data = [[-1] * COLS for _ in range(ROWS)]
             with open("level{0}_data.csv".format(level), newline="") as csvfile:
                 reader = csv.reader(csvfile, delimiter=",")
-                print("level{0}_data.csv".format(level))
                 for x, row in enumerate(reader):
                     for y, tile in enumerate(row):
                         world_data[x][y] = int(tile)
-            world.restart(world_data)
+            # world.restart(world_data)
             player.restart(x=200, y= 250)
             game_over = 0
-            player.score = previous_score
-            player.lives = previous_lives
         else:
-            screen.fill(BLACK)
-            door_open_sound.stop()
-            pygame.mixer.music.stop()
-            win_game.play(-1)
-            game_over_text = game_over_font.render("You Win", True, WHITE)
-            screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
-            player.restart(x=-100, y=100)
-            
+            pass
             
 
     # #Dibujar hitbox

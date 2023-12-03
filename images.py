@@ -14,6 +14,8 @@ PLAYER_WALK_RIGHT_IMAGES_LIST = [
     # Agrega más imágenes según sea necesario
 ]
 
+ICE_LAVA_FLOOR = "images/ice_lava_floor.png"
+
 KEY = "images/key.png"
 
 WALL = "images/muro_ladrillos.png"
@@ -34,9 +36,11 @@ ICE_BLOCK = "images/ice_block.png"
 
 ICE_MIDDLE_FLOOR = "images/ice_floor_middle.png"
 
+ICE_PLATFORM = "images/ice_platform.png"
+
 LAVA_FLOOR = "images/piso01.png"
 
-BOOK_ITEM_IMAGE = "images/spell-book.png"
+BOOK_ITEM_IMAGE = "images/spellbook.png"
 
 WATER_IMAGES_LIST = ["images/water_01.png",
                     "images/water_02.png",
