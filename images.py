@@ -42,6 +42,12 @@ LAVA_FLOOR = "images/piso01.png"
 
 BOOK_ITEM_IMAGE = "images/spellbook.png"
 
+PLAY_UNPRESSED_BUTTON_IMAGE = "images/play_pressed_button_01.png"
+PLAY_PRESSED_BUTTON_IMAGE = "images/play_pressed_button_02.png"
+
+EXIT_UNPRESSED_BUTTON_IMAGE = "images/exit_pressed_button_01.png"
+EXIT_PRESSED_BUTTON_IMAGE = "images/exit_pressed_button_02.png"
+
 WATER_IMAGES_LIST = ["images/water_01.png",
                     "images/water_02.png",
                     "images/water_03.png",
@@ -61,8 +67,7 @@ LAVA_FLOOR_IMAGES_LIST = ["images/lava_floor_01.png",
                     "images/lava_floor_03.png",
                     ]
 
-START_BUTTON_IMAGE = "images/start_button.png"
-START_BUTTON_PRESSED_IMAGE = "images/start_button_pressed.png"
+START_BUTTON_IMAGE = "images/start_pressed_button_01.png"
 
 BAT_LEFT_IMAGES_LIST = ["images/bat_left_01.png",
                         "images/bat_left_02.png",

@@ -33,7 +33,7 @@ game_over_fx.set_volume(0.1)
 
 game_music = pygame.mixer.music.load(GAME_MUSIC)
 pygame.mixer.music.set_volume(0.3)
-pygame.mixer.music.play(-1)
+# pygame.mixer.music.play(-1)
 
 miau_cat_sound = pygame.mixer.Sound(MIOU_CAT_SOUND_FX)
 miau_cat_sound.set_volume(0.3)

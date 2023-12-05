@@ -23,8 +23,9 @@ tile_size = 80
 game_over = 0
 COLS = 16
 ROWS = 12
-level = 3
+level = 1
 max_level = 3
+main_menu = True
 
 
 
@@ -78,8 +79,14 @@ ice_platform_image = pygame.transform.scale(pygame.image.load(ICE_MIDDLE_FLOOR).
 
 water_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 10)) for image in WATER_IMAGES_LIST]
 
-start_button_image = pygame.transform.scale(pygame.image.load(START_BUTTON_IMAGE).convert_alpha(), (WIDTH / 10, HEIGHT / 10))
-start_button_pressed_image = pygame.transform.scale(pygame.image.load(START_BUTTON_PRESSED_IMAGE).convert_alpha(), (WIDTH / 10, HEIGHT / 10))
+start_button_image = pygame.transform.scale(pygame.image.load(START_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 10))
+# start_button_pressed_image = pygame.transform.scale(pygame.image.load(START_BUTTON_PRESSED_IMAGE).convert_alpha(), (WIDTH / 10, HEIGHT / 10))
+
+play_unpressed_button_image = pygame.transform.scale(pygame.image.load(PLAY_UNPRESSED_BUTTON_IMAGE).convert_alpha(), (WIDTH / 6, HEIGHT / 10))
+play_pressed_button_image = pygame.transform.scale(pygame.image.load(PLAY_PRESSED_BUTTON_IMAGE).convert_alpha(), (WIDTH / 6, HEIGHT / 10))
+
+exit_unpressed_button_image = pygame.transform.scale(pygame.image.load(EXIT_UNPRESSED_BUTTON_IMAGE).convert_alpha(), (WIDTH / 6, HEIGHT / 10))
+exit_pressed_button_image = pygame.transform.scale(pygame.image.load(EXIT_PRESSED_BUTTON_IMAGE).convert_alpha(), (WIDTH / 6, HEIGHT / 10))
 
 rip_cat = pygame.transform.scale(pygame.image.load(RIP_CAT).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 
@@ -87,11 +94,12 @@ game_over_font = pygame.font.Font(None, 80)
 
 class Button(pygame.sprite.Sprite):
     def __init__(self, x, y, image) -> None:
-        self.image = start_button_image
+        self.image = image
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.clicked = False
+        # self.label = label
 
     def draw(self, screen):
         action = False
@@ -100,11 +108,11 @@ class Button(pygame.sprite.Sprite):
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
                 print("press")
                 action = True
-                self.image = start_button_pressed_image
+                # self.image = start_button_pressed_image
                 self.clicked = True
 
         if pygame.mouse.get_pressed()[0] == 0:
-            self.image = start_button_image
+            # self.image = start_button_image
             self.clicked = False
         
         screen.blit(self.image, self.rect)
@@ -279,6 +287,8 @@ class Player(pygame.sprite.Sprite):
                 if self.key_score > 0:
                     door_open_sound.play()
                     game_over = 1
+                    if level >= max_level:
+                        win_game.play()
                 else:
                     player_death_sound.play()
                     player.lives -= 1
@@ -804,7 +814,6 @@ class Miau(pygame.sprite.Sprite):
 
     def update(self):
 
-        #mover el proyectil a derecha o izquierda
         self.rect.x += self.direction * self.speed
         # Eliminar el proyectil si sale de la pantalla
         if self.rect.y < 0 or self.rect.x < 0 or self.rect.x > WIDTH:
@@ -877,6 +886,8 @@ bat_group = pygame.sprite.Group()
 world = World(world_data)
 stars_group = pygame.sprite.Group()
 start_button = Button(WIDTH / 2 - 50, HEIGHT / 2 + 100, start_button_image)
+play_button = Button(WIDTH / 2 - 300, HEIGHT / 2 + 100, play_unpressed_button_image)
+exit_button = Button(WIDTH / 2 + 100, HEIGHT / 2 + 100, exit_unpressed_button_image)
 
 # Crear grupo de sprites y agregar el jugador al grupo
 miaus = pygame.sprite.Group()
@@ -885,6 +896,7 @@ all_sprites = pygame.sprite.Group()
 # Bucle principal del juego
 running = True
 while running:
+
     game_over = player.update(game_over)
 
     # Manejo de eventos
@@ -905,106 +917,119 @@ while running:
             elif event.key == pygame.K_d:
                 player.direction = 1
 
-    # Actualizar
-    platform_group.update()
-    spell_book_group.update()
-    water_group.update()
-    lava_floor_group.update()
-    worm_group.update()
-    pumpkin_group.update()
-    exit_group.update()
-    fire_group.update()
-    lava_fire_group.update()
-    key_group.update()
-    bat_group.update()
-    all_sprites.update()
-    stars_group.update()
-
-    # Dibujar en la pantalla
-    screen.fill(BLACK)
-
-    world.draw()
-    platform_group.draw(screen)
-    spell_book_group.draw(screen)
-    water_group.draw(screen)
-    lava_floor_group.draw(screen)
-    worm_group.draw(screen)
-    pumpkin_group.draw(screen)
-    exit_group.draw(screen)
-    fire_group.draw(screen)
-    lava_fire_group.draw(screen)
-    key_group.draw(screen)
-    bat_group.draw(screen)
-    stars_group.draw(screen)
-    all_sprites.draw(screen)
-
-                # Dibujar información en la pantalla (Score, Lives, Keys)
-    font = pygame.font.Font(None, 36)  # Puedes ajustar el tamaño de la fuente según tus preferencias
-
-    spell_book_score = font.render("Spell Book: {0}".format(player.spell_book), True, GOLD)
-    screen.blit(spell_book_score, (450, 10))
-
-    # Renderizar texto para Score
-    score_text = font.render("Score: {0}".format(player.score), True, GOLD)
-    screen.blit(score_text, (150, 10))
-
-    # Renderizar texto para Lives
-    lives_text = font.render("Lives: {0}".format(int(player.lives)), True, GOLD)
-    screen.blit(lives_text, (300, 10))
-
-    # Renderizar texto para Keys
-    keys_text = font.render("Keys: {0}".format(player.key_score), True, GOLD)
-    screen.blit(keys_text, (650, 10))
-
-    if player.lives <= 0:
-        game_over_text = game_over_font.render("Game Over", True, RED)
-        screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
-
-    if player.lives <= 0:
-        # Mueve al jugador hacia abajo hasta que colisione con un tile
-        player.image = rip_cat
-        player.rect.y += 2
-        for tile in world.tile_list:
-            if tile[1].colliderect(player.rect.x, player.rect.y, player.width, player.height):
-                # El jugador ha colisionado con un tile, detén el movimiento hacia abajo
-                player.rect.y = tile[1].top - player.height
-                break
-            
-        if start_button.draw(screen):
+    if main_menu == True:
+        if play_button.draw(screen):
+            print("Play button pressed")
             pygame.mixer.music.play(-1)
-            empty_groups()
-            world.restart(world_data)
-            player.restart(x=200, y= 250)
-            game_over = 0
+            main_menu = False
 
-    if game_over == 1:
-        previous_lives = player.lives
-        previous_score = player.score
-        level += 1
-        empty_groups()
-        if level <= max_level:
-            world_data = [[-1] * COLS for _ in range(ROWS)]
-            with open("level{0}_data.csv".format(level), newline="") as csvfile:
-                reader = csv.reader(csvfile, delimiter=",")
-                print("level{0}_data.csv".format(level))
-                for x, row in enumerate(reader):
-                    for y, tile in enumerate(row):
-                        world_data[x][y] = int(tile)
-            world.restart(world_data)
-            player.restart(x=200, y= 250)
-            game_over = 0
-            player.score = previous_score
-            player.lives = previous_lives
-        else:
-            screen.fill(BLACK)
-            door_open_sound.stop()
-            pygame.mixer.music.stop()
-            win_game.play(-1)
-            game_over_text = game_over_font.render("You Win", True, WHITE)
+        if exit_button.draw(screen):
+            print("Exit button pressed")
+            running = False
+    else:
+        # Actualizar
+        platform_group.update()
+        spell_book_group.update()
+        water_group.update()
+        lava_floor_group.update()
+        worm_group.update()
+        pumpkin_group.update()
+        exit_group.update()
+        fire_group.update()
+        lava_fire_group.update()
+        key_group.update()
+        bat_group.update()
+        all_sprites.update()
+        stars_group.update()
+
+        # Dibujar en la pantalla
+        screen.fill(BLACK)
+
+        world.draw()
+        # play_button.draw(screen)
+        # exit_button.draw(screen)
+        platform_group.draw(screen)
+        spell_book_group.draw(screen)
+        water_group.draw(screen)
+        lava_floor_group.draw(screen)
+        worm_group.draw(screen)
+        pumpkin_group.draw(screen)
+        exit_group.draw(screen)
+        fire_group.draw(screen)
+        lava_fire_group.draw(screen)
+        key_group.draw(screen)
+        bat_group.draw(screen)
+        stars_group.draw(screen)
+        all_sprites.draw(screen)
+
+                    # Dibujar información en la pantalla (Score, Lives, Keys)
+        font = pygame.font.Font(None, 36)  # Puedes ajustar el tamaño de la fuente según tus preferencias
+
+        spell_book_score = font.render("Spell Book: {0}".format(player.spell_book), True, GOLD)
+        screen.blit(spell_book_score, (450, 10))
+
+        # Renderizar texto para Score
+        score_text = font.render("Score: {0}".format(player.score), True, GOLD)
+        screen.blit(score_text, (150, 10))
+
+        # Renderizar texto para Lives
+        lives_text = font.render("Lives: {0}".format(int(player.lives)), True, GOLD)
+        screen.blit(lives_text, (300, 10))
+
+        # Renderizar texto para Keys
+        keys_text = font.render("Keys: {0}".format(player.key_score), True, GOLD)
+        screen.blit(keys_text, (650, 10))
+
+        if player.lives <= 0:
+            game_over_text = game_over_font.render("Game Over", True, RED)
             screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
-            player.restart(x=-100, y=100)
-            
-            
+
+        if player.lives <= 0:
+            # Mueve al jugador hacia abajo hasta que colisione con un tile
+            player.image = rip_cat
+            player.rect.y += 2
+            for tile in world.tile_list:
+                if tile[1].colliderect(player.rect.x, player.rect.y, player.width, player.height):
+                    # El jugador ha colisionado con un tile, detén el movimiento hacia abajo
+                    player.rect.y = tile[1].top - player.height
+                    break
+                
+            if start_button.draw(screen):
+                print("reset")
+                pygame.mixer.music.play(-1)
+                empty_groups()
+                world.restart(world_data)
+                player.restart(x=200, y= 250)
+                game_over = 0
+
+        if game_over == 1:
+            previous_lives = player.lives
+            previous_score = player.score
+            level += 1
+            empty_groups()
+            if level <= max_level:
+                world_data = [[-1] * COLS for _ in range(ROWS)]
+                with open("level{0}_data.csv".format(level), newline="") as csvfile:
+                    reader = csv.reader(csvfile, delimiter=",")
+                    print("level{0}_data.csv".format(level))
+                    for x, row in enumerate(reader):
+                        for y, tile in enumerate(row):
+                            world_data[x][y] = int(tile)
+                world.restart(world_data)
+                player.restart(x=500, y= 250)
+                game_over = 0
+                player.score = previous_score
+                player.lives = previous_lives
+            else:
+                screen.fill(BLACK)
+                door_open_sound.stop()
+                pygame.mixer.music.stop()
+                # win_game.play(0)
+                game_over_text = game_over_font.render("You Win", True, WHITE)
+                screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
+                player.restart(x=-100, y=100)
+
+        screen.blit(player.image, player.rect)
 
     # #Dibujar hitbox
     # for miau in miaus:
@@ -1021,8 +1046,6 @@ while running:
 
     # #Dibujar hitbox del jugador
     # pygame.draw.rect(screen, GREEN, player.rect, 2)
-
-    screen.blit(player.image, player.rect)
 
     # Actualizar la pantalla
     pygame.display.flip()
