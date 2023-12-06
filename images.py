@@ -14,6 +14,15 @@ PLAYER_WALK_RIGHT_IMAGES_LIST = [
     # Agrega más imágenes según sea necesario
 ]
 
+GHOST_PLAYER_WALK_RIGHT_IMAGES_LIST = [
+    "images/ghost_cat_white_right_01.png",
+    "images/ghost_cat_white_right_02.png",
+    "images/ghost_cat_white_right_03.png"
+]
+
+BACKGROUND_IMAGE = "images/casa_embrujada.jpg"
+
+
 ICE_LAVA_FLOOR = "images/ice_lava_floor.png"
 
 KEY = "images/key.png"

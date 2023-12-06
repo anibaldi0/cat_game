@@ -19,10 +19,10 @@ icon = pygame.image.load(ICON_PATH)
 pygame.display.set_icon(icon)
 
 # define variables
-tile_size = 80
+tile_size = 60
 game_over = 0
-COLS = 16
-ROWS = 12
+COLS = 18
+ROWS = 13
 level = 1
 max_level = 3
 main_menu = True
@@ -34,30 +34,36 @@ miau_left_image = pygame.transform.flip(miau_right_image, True, False)
 
 cat_death_image = pygame.transform.scale(pygame.image.load(CAT_DEATH_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 
+background_image = pygame.transform.scale(pygame.image.load(BACKGROUND_IMAGE).convert_alpha(), (WIDTH, HEIGHT))
+
 walk_right_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH // 20, HEIGHT // 16)) for image in PLAYER_WALK_RIGHT_IMAGES_LIST]
 walk_left_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(),
                         (WIDTH // 20, HEIGHT // 16)), True, False) for image in PLAYER_WALK_RIGHT_IMAGES_LIST]
 
-wall_image = pygame.transform.scale(pygame.image.load(WALL).convert_alpha(), (WIDTH / 16, HEIGHT / 17))
+ghost_cat_right_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH // 20, HEIGHT // 16)) for image in GHOST_PLAYER_WALK_RIGHT_IMAGES_LIST]
+ghost_cat_left_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(),
+                        (WIDTH // 20, HEIGHT // 16)), True, False) for image in GHOST_PLAYER_WALK_RIGHT_IMAGES_LIST]
+
+wall_image = pygame.transform.scale(pygame.image.load(WALL).convert_alpha(), (WIDTH / 18, HEIGHT / 18))
 tree_image = pygame.transform.scale(pygame.image.load(TREE).convert_alpha(), (WIDTH / 16, HEIGHT / 11))
 
 bat_left_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 17, HEIGHT / 17)) for image in BAT_LEFT_IMAGES_LIST]
 bat_right_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(), 
                         (WIDTH // 17, HEIGHT // 17)), True, False) for image in BAT_LEFT_IMAGES_LIST]
 
-lava_fire_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 22)) for image in LAVA_FIRE_IMAGES_LIST]
+lava_fire_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 18, HEIGHT / 16)) for image in LAVA_FIRE_IMAGES_LIST]
 
-lava_floor_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 14)) for image in LAVA_FLOOR_IMAGES_LIST]
+lava_floor_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 18, HEIGHT / 16)) for image in LAVA_FLOOR_IMAGES_LIST]
 
-ice_lava_floor_image = pygame.transform.scale(pygame.image.load(ICE_LAVA_FLOOR).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
+ice_lava_floor_image = pygame.transform.scale(pygame.image.load(ICE_LAVA_FLOOR).convert_alpha(), (WIDTH / 18, HEIGHT / 12))
 
-worm_left_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 22)) for image in WORM_IMAGE_LIST]
+worm_left_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 18, HEIGHT / 22)) for image in WORM_IMAGE_LIST]
 worm_right_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(), 
                         (WIDTH // 16, HEIGHT // 22)), True, False) for image in WORM_IMAGE_LIST]
 
 pumpkin_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 20, HEIGHT / 16)) for image in PUMPKIN_IMAGE_LIST]
 
-fire_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 20, HEIGHT / 10)) for image in FIRE_IMAGES_LIST]
+fire_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 20, HEIGHT / 14)) for image in FIRE_IMAGES_LIST]
 
 key_image = pygame.transform.scale(pygame.image.load(KEY).convert_alpha(), (WIDTH / 22, HEIGHT / 16))
 
@@ -65,19 +71,19 @@ star_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), 
 
 door_image = pygame.transform.scale(pygame.image.load(DOOR_IMAGE).convert_alpha(), (WIDTH / 22, HEIGHT / 16))
 
-spell_book_image = pygame.transform.scale(pygame.image.load(BOOK_ITEM_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
+spell_book_image = pygame.transform.scale(pygame.image.load(BOOK_ITEM_IMAGE).convert_alpha(), (WIDTH / 18, HEIGHT / 14))
 
-ice_right_platform_image = pygame.transform.scale(pygame.image.load(ICE_RIGHT_PLATFORM).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
+ice_right_platform_image = pygame.transform.scale(pygame.image.load(ICE_RIGHT_PLATFORM).convert_alpha(), (WIDTH / 18, HEIGHT / 13))
 
-ice_block_image = pygame.transform.scale(pygame.image.load(ICE_BLOCK).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
+ice_block_image = pygame.transform.scale(pygame.image.load(ICE_BLOCK).convert_alpha(), (WIDTH / 18, HEIGHT / 13))
 
-ice_left_platform_image = pygame.transform.scale(pygame.image.load(ICE_LEFT_PLATFORM).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
+ice_left_platform_image = pygame.transform.scale(pygame.image.load(ICE_LEFT_PLATFORM).convert_alpha(), (WIDTH / 18, HEIGHT / 13))
 
-ice_middle_floor_image = pygame.transform.scale(pygame.image.load(ICE_MIDDLE_FLOOR).convert_alpha(), (WIDTH / 16, HEIGHT / 12))
+ice_middle_floor_image = pygame.transform.scale(pygame.image.load(ICE_MIDDLE_FLOOR).convert_alpha(), (WIDTH / 18, HEIGHT / 13))
 
-ice_platform_image = pygame.transform.scale(pygame.image.load(ICE_MIDDLE_FLOOR).convert_alpha(), (WIDTH / 16, HEIGHT / 20))
+ice_platform_image = pygame.transform.scale(pygame.image.load(ICE_MIDDLE_FLOOR).convert_alpha(), (WIDTH / 18, HEIGHT / 20))
 
-water_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 10)) for image in WATER_IMAGES_LIST]
+water_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 18, HEIGHT / 10)) for image in WATER_IMAGES_LIST]
 
 start_button_image = pygame.transform.scale(pygame.image.load(START_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 10))
 # start_button_pressed_image = pygame.transform.scale(pygame.image.load(START_BUTTON_PRESSED_IMAGE).convert_alpha(), (WIDTH / 10, HEIGHT / 10))
@@ -142,6 +148,14 @@ class Player(pygame.sprite.Sprite):
                 if self.walk_index >= len(self.walk_images_right) * 5:
                     self.walk_index = 0
 
+            if keys[pygame.K_d] and self.spell_book == 1:
+                self.direction = 1
+                dx += PLAYER_SPEED
+                self.image = self.ghost_right_images[self.walk_index // 5]  # Ajusta el divisor según la velocidad deseada de la animación
+                self.walk_index += 1
+                if self.walk_index >= len(self.ghost_right_images) * 5:
+                    self.walk_index = 0
+
             # Animación de caminar hacia la izquierda
             if keys[pygame.K_a]:
                 self.direction = -1
@@ -149,6 +163,14 @@ class Player(pygame.sprite.Sprite):
                 self.image = self.walk_images_left[self.walk_index // 5]
                 self.walk_index += 1
                 if self.walk_index >= len(self.walk_images_left) * 5:
+                    self.walk_index = 0
+
+            if keys[pygame.K_a] and self.spell_book == 1:
+                self.direction = -1
+                dx -= PLAYER_SPEED
+                self.image = self.ghost_left_images[self.walk_index // 5]
+                self.walk_index += 1
+                if self.walk_index >= len(self.ghost_left_images) * 5:
                     self.walk_index = 0
 
             if keys[pygame.K_a] == False and keys[pygame.K_d] == False:
@@ -159,10 +181,18 @@ class Player(pygame.sprite.Sprite):
                 if self.direction == -1:
                     self.image = self.walk_images_left[self.index]
 
+            if keys[pygame.K_a] == False and keys[pygame.K_d] == False and self.spell_book == 1:
+                self.counter = 0
+                self.index = 0
+                if self.direction == 1:
+                    self.image = self.ghost_right_images[self.index]
+                if self.direction == -1:
+                    self.image = self.ghost_left_images[self.index]
+
             # Controlar el salto
             if keys[pygame.K_SPACE] and self.is_jumping == False and self.jump_count < self.max_jump_count:
                 jumping.play()
-                self.vel_y = -15
+                self.vel_y = -12
                 self.is_jumping = True
                 self.jump_count += 1
 
@@ -218,9 +248,10 @@ class Player(pygame.sprite.Sprite):
                     self.score -= 1
                     game_over = -1
                     print(player.lives)
+                    self.spell_book = 0
             if player.rect.y < 0:
-                player.rect.x = 200
-                player.rect.y = 255
+                player.rect.x = 10
+                player.rect.y = 200
 
             worm_hit = pygame.sprite.spritecollide(player, worm_group, False)
             for worm in worm_hit:
@@ -230,9 +261,10 @@ class Player(pygame.sprite.Sprite):
                     self.score -= 1
                     game_over = -1
                     print(player.lives)
+                    self.spell_book = 0
             if player.rect.y < 0:
-                player.rect.x = 200
-                player.rect.y = 255
+                player.rect.x = 10
+                player.rect.y = 200
                     
             # Verificar colisiones con estrellas
             stars_hit = pygame.sprite.spritecollide(self, stars_group, True)
@@ -243,9 +275,15 @@ class Player(pygame.sprite.Sprite):
 
             pumpkin_hit = pygame.sprite.spritecollide(self, pumpkin_group, True)
             if pumpkin_hit:
-                star_coin_sound.play()
-                self.score += 5
-                print("Puntuación:", self.score)
+                if self.spell_book == 1:
+                    star_coin_sound.play()
+                    self.score += 5
+                    print("Puntuación:", self.score)
+                else:
+                    player_death_sound.play()
+                    player.lives -= 1
+                    self.score -= 5
+                    game_over = -1
 
             key_hit = pygame.sprite.spritecollide(self, key_group, True)
             if key_hit:
@@ -267,6 +305,7 @@ class Player(pygame.sprite.Sprite):
                 player.lives -= 1
                 self.score -= 1
                 game_over = -1
+                self.spell_book = 0
 
             water_hit = pygame.sprite.spritecollide(self, water_group, False)
             if water_hit:
@@ -274,6 +313,7 @@ class Player(pygame.sprite.Sprite):
                 player.lives -= 1
                 self.score -= 1
                 game_over = -1
+                self.spell_book = 0
 
             lava_fire_hit = pygame.sprite.spritecollide(self, lava_fire_group, False)
             if lava_fire_hit:
@@ -281,6 +321,7 @@ class Player(pygame.sprite.Sprite):
                     player.lives -= 1
                     self.score -= 1
                     game_over = -1
+                    self.spell_book = 0
                 
             exit_hit = pygame.sprite.spritecollide(self, exit_group, False)
             if exit_hit:
@@ -294,6 +335,7 @@ class Player(pygame.sprite.Sprite):
                     player.lives -= 1
                     self.score -= 2
                     game_over = -1
+                    self.spell_book = 0
 
             lava_floor_hit = pygame.sprite.spritecollide(self, lava_floor_group, False)
             for lava in lava_floor_hit:
@@ -343,6 +385,8 @@ class Player(pygame.sprite.Sprite):
         self.walk_index = 0
         self.walk_images_right = walk_right_images
         self.walk_images_left = walk_left_images
+        self.ghost_right_images = ghost_cat_right_images
+        self.ghost_left_images = ghost_cat_left_images
 
         self.image = self.walk_images_right[0] #el juego empieza con player a la derecha
         self.rect = self.image.get_rect()
@@ -439,7 +483,7 @@ class World():
                     platform = Platform(col_count * tile_size, row_count * tile_size + 35, -1, 6)
                     platform_group.add(platform)
                 if tile == 3:
-                    worm = Worm(col_count * tile_size, row_count * tile_size + 35, 6)
+                    worm = Worm(col_count * tile_size, row_count * tile_size + 35, 4)
                     worm_group.add(worm)
                 if tile == 14:
                     spell_book = SpellBook(col_count * tile_size, row_count * tile_size - 10)
@@ -451,8 +495,8 @@ class World():
                     lava_floor = LavaFloor(col_count * tile_size, row_count * tile_size + 10)
                     lava_floor_group.add(lava_floor)
                 if tile == 20:
-                    pumpkin = Pumpkin(col_count * tile_size, row_count * tile_size + 25)
-                    fire_group.add(pumpkin)
+                    pumpkin = Pumpkin(col_count * tile_size, row_count * tile_size)
+                    pumpkin_group.add(pumpkin)
                 if tile == 5:
                     door = Exit(col_count * tile_size + 10, row_count * tile_size + 20)
                     exit_group.add(door)
@@ -466,7 +510,7 @@ class World():
                     lava = LavaFire(col_count * tile_size, row_count * tile_size)
                     lava_fire_group.add(lava)
                 if tile == 6:
-                    fire = Fire(col_count * tile_size, row_count + 9.45 * tile_size, FIRE_SPEED)
+                    fire = Fire(col_count * tile_size, row_count + 9.75 * tile_size, FIRE_SPEED)
                     fire_group.add(fire)
                 col_count += 1
             row_count += 1
@@ -506,7 +550,7 @@ class Key(pygame.sprite.Sprite):
         self.image = key_image
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y + 15  # Ajustar la posición vertical según sea necesario
+        self.rect.y = y + 5 # Ajustar la posición vertical según sea necesario
         self.key_hitbox = pygame.Surface((self.rect.width, self.rect.height))
         self.key_hitbox.fill(RED)
         self.key_hitbox_rect = self.key_hitbox.get_rect()
@@ -523,7 +567,7 @@ class SpellBook(pygame.sprite.Sprite):
         self.image = spell_book_image
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y + 15  # Ajustar la posición vertical según sea necesario
+        self.rect.y = y + 10  # Ajustar la posición vertical según sea necesario
         self.spell_book_hitbox = pygame.Surface((self.rect.width, self.rect.height))
         self.spell_book_hitbox.fill(RED)
         self.spell_book_hitbox_rect = self.spell_book_hitbox.get_rect()
@@ -540,7 +584,7 @@ class Exit(pygame.sprite.Sprite):
         self.image = door_image
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y  # Ajustar la posición vertical según sea necesario
+        self.rect.y = y - 8 # Ajustar la posición vertical según sea necesario
         self.exit_hitbox = pygame.Surface((self.rect.width, self.rect.height))
         self.exit_hitbox.fill(RED)
         self.exit_hitbox_rect = self.exit_hitbox.get_rect()
@@ -559,7 +603,7 @@ class Pumpkin(pygame.sprite.Sprite):
         self.image = pumpkin_images[0]
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y # Ajustar la posición vertical según sea necesario
+        self.rect.y = y + 15# Ajustar la posición vertical según sea necesario
         self.pumpkin_hitbox = pygame.Surface((self.rect.width, self.rect.height))
         self.pumpkin_hitbox.fill(RED)
         self.pumpkin_hitbox_rect = self.pumpkin_hitbox.get_rect()
@@ -638,7 +682,7 @@ class LavaFire(pygame.sprite.Sprite):
         self.image = lava_fire_images[0]
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y + 13 # Ajustar la posición vertical según sea necesario
+        self.rect.y = y # Ajustar la posición vertical según sea necesario
         self.lava_hitbox = pygame.Surface((self.rect.width, self.rect.height))
         self.lava_hitbox.fill(RED)
         self.lava_hitbox = self.lava_hitbox.get_rect()
@@ -675,8 +719,8 @@ class Fire(pygame.sprite.Sprite):
         # Lógica de actualización del enemigo (si es necesario)
 
         self.rect.y -= 2
-        if self.rect.y == 600:
-            self.rect.y = 950
+        if self.rect.y == 500:
+            self.rect.y = 780
 
         self.fire_index += 1
         if self.fire_index >= len(self.fire_images) * 10:
@@ -694,7 +738,7 @@ class Star(pygame.sprite.Sprite):
         self.image = star_images[0]
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y + 25
+        self.rect.y = y + 20
 
         # Crear la hitbox de la estrella (rectángulo rojo)
         self.star_hitbox = pygame.Surface((self.rect.width, self.rect.height))
@@ -724,7 +768,7 @@ class Worm(pygame.sprite.Sprite):
         self.image = worm_left_images[0]
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y
+        self.rect.y = y - 10
         self.speed = speed
         self.move_couter = 0
         self.direction = 0
@@ -733,13 +777,13 @@ class Worm(pygame.sprite.Sprite):
         self.worm_hitbox = pygame.Surface((self.rect.width, self.rect.height))
         self.worm_hitbox.fill(GREEN)
         self.worm_hitbox_rect = self.worm_hitbox.get_rect()  # Agregar esta línea
-        self.player_hitbox = self.worm_hitbox.get_rect()  # Agregar esta línea
+        # self.player_hitbox = self.worm_hitbox.get_rect()  # Agregar esta línea
 
     def update(self):
         # Lógica de actualización del bat (movimiento por el eje x)
         self.rect.x += self.speed
         self.move_couter += 1
-        if abs(self.move_couter) > 50:
+        if abs(self.move_couter) > 70:
             self.speed *= -1
             self.move_couter *= -1
 
@@ -771,13 +815,13 @@ class Bat(pygame.sprite.Sprite):
         self.bat_hitbox = pygame.Surface((self.rect.width, self.rect.height))
         self.bat_hitbox.fill(GREEN)
         self.bat_hitbox_rect = self.bat_hitbox.get_rect()  # Agregar esta línea
-        self.player_hitbox = self.bat_hitbox.get_rect()  # Agregar esta línea
+        # self.player_hitbox = self.bat_hitbox.get_rect()  # Agregar esta línea
 
     def update(self):
         # Lógica de actualización del bat (movimiento por el eje x)
         self.rect.x += self.speed
         self.move_couter += 1
-        if abs(self.move_couter) > 50:
+        if abs(self.move_couter) > 60:
             self.speed *= -1
             self.move_couter *= -1
 
@@ -804,7 +848,7 @@ class Miau(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y - 10
+        self.rect.y = y
         self.speed = 6
         self.direction = direction
         # Crear la hitbox del proyectil (rectángulo rojo)
@@ -871,7 +915,7 @@ with open("level{0}_data.csv".format(level), newline="") as csvfile:
 print(world_data)
 
 # Crear jugador
-player = Player(x=200, y= 350)
+player = Player(x=10, y= 200)
 platform_group = pygame.sprite.Group()
 spell_book_group = pygame.sprite.Group()
 water_group = pygame.sprite.Group()
@@ -896,7 +940,7 @@ all_sprites = pygame.sprite.Group()
 # Bucle principal del juego
 running = True
 while running:
-
+    screen.blit(background_image, (0, 0))
     game_over = player.update(game_over)
 
     # Manejo de eventos
@@ -999,7 +1043,7 @@ while running:
                 pygame.mixer.music.play(-1)
                 empty_groups()
                 world.restart(world_data)
-                player.restart(x=200, y= 250)
+                player.restart(x=10, y= 200)
                 game_over = 0
 
         if game_over == 1:
@@ -1016,7 +1060,7 @@ while running:
                         for y, tile in enumerate(row):
                             world_data[x][y] = int(tile)
                 world.restart(world_data)
-                player.restart(x=500, y= 250)
+                player.restart(x=10, y= 200)
                 game_over = 0
                 player.score = previous_score
                 player.lives = previous_lives
@@ -1027,7 +1071,7 @@ while running:
                 # win_game.play(0)
                 game_over_text = game_over_font.render("You Win", True, WHITE)
                 screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
-                player.restart(x=-100, y=100)
+                player.restart(x=-100, y=-100)
 
         screen.blit(player.image, player.rect)
 
