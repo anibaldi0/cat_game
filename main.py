@@ -26,16 +26,6 @@ max_level = 3
 main_menu = True
 
 
-def load_best_score():
-    try:
-        with open("best_score.csv", "r") as file:
-            reader = csv.reader(file)
-            return int(next(reader)[0])
-    except FileNotFoundError:
-        return 0
-best_score = load_best_score()
-print("Best score loaded: {0}".format(best_score))
-
 wolves_intro.play()
 
 miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
@@ -1104,22 +1094,6 @@ while running:
                 game_over_text = game_over_font.render("You Win", True, WHITE)
                 screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
                 player.restart(x=-100, y=-100)
-
-            if player.score > get_best_score():
-                update_best_score(player.score)
-                print("New best score: {0}".format(player.score))
-
-        def get_best_score():
-            try:
-                with open("best_score.csv", "r") as file:
-                    reader = csv.reader(file)
-                    return int(next(reader)[0])
-            except FileExistsError:
-                return 0
-        def update_best_score(new_score):
-            with open("best_score.csv", "w", newline="") as file:
-                writer = csv.writer(file)
-                writer.writerow([new_score])
 
         screen.blit(player.image, player.rect)
 
