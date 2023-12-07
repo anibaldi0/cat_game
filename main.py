@@ -21,20 +21,33 @@ pygame.display.set_icon(icon)
 # define variables
 tile_size = 60
 game_over = 0
-COLS = 18
-ROWS = 13
 level = 1
 max_level = 3
 main_menu = True
 
 
+def load_best_score():
+    try:
+        with open("best_score.csv", "r") as file:
+            reader = csv.reader(file)
+            return int(next(reader)[0])
+    except FileNotFoundError:
+        return 0
+best_score = load_best_score()
+print("Best score loaded: {0}".format(best_score))
+
+wolves_intro.play()
 
 miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 miau_left_image = pygame.transform.flip(miau_right_image, True, False)
 
 cat_death_image = pygame.transform.scale(pygame.image.load(CAT_DEATH_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 
-background_image = pygame.transform.scale(pygame.image.load(BACKGROUND_IMAGE).convert_alpha(), (WIDTH, HEIGHT))
+background_normal_image = pygame.transform.scale(pygame.image.load(BACKGROUND_NORMAL_IMAGE).convert_alpha(), (WIDTH, HEIGHT))
+background_exit_image = pygame.transform.scale(pygame.image.load(BACKGROUND_EXIT_IMAGE).convert_alpha(), (WIDTH, HEIGHT))
+background_play_image = pygame.transform.scale(pygame.image.load(BACKGROUND_PLAY_IMAGE).convert_alpha(), (WIDTH, HEIGHT))
+background_spider_web = pygame.transform.scale(pygame.image.load(BACKGROUND_SPIDER_WEB).convert_alpha(), (WIDTH, HEIGHT))
+
 
 walk_right_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH // 20, HEIGHT // 16)) for image in PLAYER_WALK_RIGHT_IMAGES_LIST]
 walk_left_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(),
@@ -85,22 +98,24 @@ ice_platform_image = pygame.transform.scale(pygame.image.load(ICE_MIDDLE_FLOOR).
 
 water_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 18, HEIGHT / 10)) for image in WATER_IMAGES_LIST]
 
-start_button_image = pygame.transform.scale(pygame.image.load(START_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 10))
-# start_button_pressed_image = pygame.transform.scale(pygame.image.load(START_BUTTON_PRESSED_IMAGE).convert_alpha(), (WIDTH / 10, HEIGHT / 10))
+start_normal_button_image = pygame.transform.scale(pygame.image.load(START_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 14))
+start_hover_button_image = pygame.transform.scale(pygame.image.load(START_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 14))
 
-play_unpressed_button_image = pygame.transform.scale(pygame.image.load(PLAY_UNPRESSED_BUTTON_IMAGE).convert_alpha(), (WIDTH / 6, HEIGHT / 10))
-play_pressed_button_image = pygame.transform.scale(pygame.image.load(PLAY_PRESSED_BUTTON_IMAGE).convert_alpha(), (WIDTH / 6, HEIGHT / 10))
+play_normal_button_image = pygame.transform.scale(pygame.image.load(PLAY_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+play_hover_button_image = pygame.transform.scale(pygame.image.load(PLAY_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
 
-exit_unpressed_button_image = pygame.transform.scale(pygame.image.load(EXIT_UNPRESSED_BUTTON_IMAGE).convert_alpha(), (WIDTH / 6, HEIGHT / 10))
-exit_pressed_button_image = pygame.transform.scale(pygame.image.load(EXIT_PRESSED_BUTTON_IMAGE).convert_alpha(), (WIDTH / 6, HEIGHT / 10))
+exit_normal_button_image = pygame.transform.scale(pygame.image.load(EXIT_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+exit_hover_button_image = pygame.transform.scale(pygame.image.load(EXIT_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
 
 rip_cat = pygame.transform.scale(pygame.image.load(RIP_CAT).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 
 game_over_font = pygame.font.Font(None, 80)
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, x, y, image) -> None:
-        self.image = image
+    def __init__(self, x, y, normal_image, hover_image) -> None:
+        self.normal_image = normal_image
+        self.hover_image = hover_image
+        self.image = normal_image
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -111,11 +126,14 @@ class Button(pygame.sprite.Sprite):
         action = False
         mouse_pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(mouse_pos):
+            self.image = self.hover_image
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
                 print("press")
                 action = True
                 # self.image = start_button_pressed_image
                 self.clicked = True
+        else:
+            self.image = self.normal_image
 
         if pygame.mouse.get_pressed()[0] == 0:
             # self.image = start_button_image
@@ -860,7 +878,7 @@ class Miau(pygame.sprite.Sprite):
 
         self.rect.x += self.direction * self.speed
         # Eliminar el proyectil si sale de la pantalla
-        if self.rect.y < 0 or self.rect.x < 0 or self.rect.x > WIDTH:
+        if self.rect.x < 0 or self.rect.x > WIDTH - 60:
             self.kill()
         # Actualizar la posición de la hitbox del proyectil
         self.miau_hitbox.topleft = self.rect.topleft
@@ -929,9 +947,9 @@ key_group = pygame.sprite.Group()
 bat_group = pygame.sprite.Group()
 world = World(world_data)
 stars_group = pygame.sprite.Group()
-start_button = Button(WIDTH / 2 - 50, HEIGHT / 2 + 100, start_button_image)
-play_button = Button(WIDTH / 2 - 300, HEIGHT / 2 + 100, play_unpressed_button_image)
-exit_button = Button(WIDTH / 2 + 100, HEIGHT / 2 + 100, exit_unpressed_button_image)
+start_button = Button(WIDTH / 2 - 50, HEIGHT / 2 + 100, start_normal_button_image, start_hover_button_image)
+play_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 250, play_normal_button_image, play_hover_button_image)
+exit_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, exit_normal_button_image, exit_hover_button_image)
 
 # Crear grupo de sprites y agregar el jugador al grupo
 miaus = pygame.sprite.Group()
@@ -940,9 +958,8 @@ all_sprites = pygame.sprite.Group()
 # Bucle principal del juego
 running = True
 while running:
-    screen.blit(background_image, (0, 0))
+    
     game_over = player.update(game_over)
-
     # Manejo de eventos
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -962,6 +979,19 @@ while running:
                 player.direction = 1
 
     if main_menu == True:
+        # Verificar si el cursor está sobre el botón play_button
+        if play_button.rect.collidepoint(pygame.mouse.get_pos()):
+            # Cambiar la imagen del fondo cuando el cursor está sobre play_button
+            background_image = background_play_image
+        elif exit_button.rect.collidepoint(pygame.mouse.get_pos()):
+            # Restablecer la imagen del fondo al estado normal
+            background_image = background_exit_image
+        else:
+            background_image = background_normal_image
+
+        # Dibujar el fondo en la pantalla
+        screen.blit(background_image, (0, 0))
+
         if play_button.draw(screen):
             print("Play button pressed")
             pygame.mixer.music.play(-1)
@@ -987,7 +1017,9 @@ while running:
         stars_group.update()
 
         # Dibujar en la pantalla
-        screen.fill(BLACK)
+        screen.blit(background_spider_web, (0, 0))
+        # screen.fill(BLACK)
+        
 
         world.draw()
         # play_button.draw(screen)
@@ -1072,6 +1104,22 @@ while running:
                 game_over_text = game_over_font.render("You Win", True, WHITE)
                 screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
                 player.restart(x=-100, y=-100)
+
+            if player.score > get_best_score():
+                update_best_score(player.score)
+                print("New best score: {0}".format(player.score))
+
+        def get_best_score():
+            try:
+                with open("best_score.csv", "r") as file:
+                    reader = csv.reader(file)
+                    return int(next(reader)[0])
+            except FileExistsError:
+                return 0
+        def update_best_score(new_score):
+            with open("best_score.csv", "w", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow([new_score])
 
         screen.blit(player.image, player.rect)
 

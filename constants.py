@@ -8,6 +8,9 @@ HEIGHT = 760
 
 FPS = 60
 
+COLS = 18
+ROWS = 13
+
 # colores
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)

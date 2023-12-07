@@ -20,8 +20,11 @@ GHOST_PLAYER_WALK_RIGHT_IMAGES_LIST = [
     "images/ghost_cat_white_right_03.png"
 ]
 
-BACKGROUND_IMAGE = "images/casa_embrujada.jpg"
+BACKGROUND_NORMAL_IMAGE = "images/house_idle.jpg"
+BACKGROUND_EXIT_IMAGE = "images/house_exit.jpg"
+BACKGROUND_PLAY_IMAGE = "images/house_play.jpg"
 
+BACKGROUND_SPIDER_WEB = "images/spider_web_01.jpg"
 
 ICE_LAVA_FLOOR = "images/ice_lava_floor.png"
 
@@ -51,11 +54,14 @@ LAVA_FLOOR = "images/piso01.png"
 
 BOOK_ITEM_IMAGE = "images/spellbook.png"
 
-PLAY_UNPRESSED_BUTTON_IMAGE = "images/play_pressed_button_01.png"
-PLAY_PRESSED_BUTTON_IMAGE = "images/play_pressed_button_02.png"
+PLAY_NORMAL_BUTTON_IMAGE = "images/play_button_normal.png"
+PLAY_HOVER_BUTTON_IMAGE = "images/play_button_hover.png"
 
-EXIT_UNPRESSED_BUTTON_IMAGE = "images/exit_pressed_button_01.png"
-EXIT_PRESSED_BUTTON_IMAGE = "images/exit_pressed_button_02.png"
+EXIT_NORMAL_BUTTON_IMAGE = "images/exit_button_normal.png"
+EXIT_HOVER_BUTTON_IMAGE = "images/exit_button_hover.png"
+
+START_HOVER_BUTTON_IMAGE = "images/start_button_hover.png"
+START_NORMAL_BUTTON_IMAGE = "images/start_button_normal.png"
 
 WATER_IMAGES_LIST = ["images/water_01.png",
                     "images/water_02.png",
@@ -75,8 +81,6 @@ LAVA_FLOOR_IMAGES_LIST = ["images/lava_floor_01.png",
                     "images/lava_floor_02.png",
                     "images/lava_floor_03.png",
                     ]
-
-START_BUTTON_IMAGE = "images/start_pressed_button_01.png"
 
 BAT_LEFT_IMAGES_LIST = ["images/bat_left_01.png",
                         "images/bat_left_02.png",

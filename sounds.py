@@ -23,6 +23,8 @@ GAME_OVER_FX = "sounds/arcade_game_over.wav"
 
 WIN_GAME = "sounds/video_game_win.wav"
 
+WOLVES_INTRO = "sounds/wolves_intro.wav"
+
 
 
 win_game = pygame.mixer.Sound(WIN_GAME)
@@ -34,6 +36,9 @@ game_over_fx.set_volume(0.1)
 game_music = pygame.mixer.music.load(GAME_MUSIC)
 pygame.mixer.music.set_volume(0.3)
 # pygame.mixer.music.play(-1)
+
+wolves_intro = pygame.mixer.Sound(WOLVES_INTRO)
+wolves_intro.set_volume(0.3)
 
 miau_cat_sound = pygame.mixer.Sound(MIOU_CAT_SOUND_FX)
 miau_cat_sound.set_volume(0.3)
