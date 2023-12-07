@@ -857,6 +857,8 @@ class Miau(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
         self.speed = 6
         self.direction = direction
         # Crear la hitbox del proyectil (rectángulo rojo)
@@ -872,6 +874,11 @@ class Miau(pygame.sprite.Sprite):
             self.kill()
         # Actualizar la posición de la hitbox del proyectil
         self.miau_hitbox.topleft = self.rect.topleft
+
+        # comprobar colision con límites del mundo
+        for tile in world.tile_list:
+            if tile[1].colliderect(self.rect.x, self.rect.y, self.width, self.height):
+                self.kill()
 
         # Verificar colisiones con enemigos
         enemies_hit = pygame.sprite.spritecollide(self, bat_group, True)
