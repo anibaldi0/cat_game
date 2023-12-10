@@ -25,41 +25,42 @@ WIN_GAME = "sounds/video_game_win.wav"
 
 WOLVES_INTRO = "sounds/wolves_intro.wav"
 
-
+INITIAL_VOLUME = 0.5
+current_volume = INITIAL_VOLUME
 
 win_game = pygame.mixer.Sound(WIN_GAME)
-win_game.set_volume(0.5)
+win_game.set_volume(INITIAL_VOLUME)
 
 game_over_fx = pygame.mixer.Sound(GAME_OVER_FX)
-game_over_fx.set_volume(0.1)
+game_over_fx.set_volume(INITIAL_VOLUME)
 
 game_music = pygame.mixer.music.load(GAME_MUSIC)
-pygame.mixer.music.set_volume(0.3)
+pygame.mixer.music.set_volume(INITIAL_VOLUME)
 # pygame.mixer.music.play(-1)
 
 wolves_intro = pygame.mixer.Sound(WOLVES_INTRO)
-wolves_intro.set_volume(0.3)
+wolves_intro.set_volume(INITIAL_VOLUME)
 
 miau_cat_sound = pygame.mixer.Sound(MIOU_CAT_SOUND_FX)
-miau_cat_sound.set_volume(0.3)
+miau_cat_sound.set_volume(INITIAL_VOLUME)
 
 star_coin_sound = pygame.mixer.Sound(SATAR_SOUND_FX)
-star_coin_sound.set_volume(0.3)
+star_coin_sound.set_volume(INITIAL_VOLUME)
 
 bat_collision_sound = pygame.mixer.Sound(BAT_IMPACT_SOUND_FX)
-bat_collision_sound.set_volume(0.3)
+bat_collision_sound.set_volume(INITIAL_VOLUME)
 
 player_death_sound = pygame.mixer.Sound(BAT_IMPACT_SOUND_FX)
-player_death_sound.set_volume(0.5)
+player_death_sound.set_volume(INITIAL_VOLUME)
 
 key_sound = pygame.mixer.Sound(ITEM_SOUND_FX)
-key_sound.set_volume(1)
+key_sound.set_volume(INITIAL_VOLUME)
 
 door_open_sound = pygame.mixer.Sound(DOOR_OPEN_FX)
-door_open_sound.set_volume(0.2)
+door_open_sound.set_volume(INITIAL_VOLUME)
 
 jumping = pygame.mixer.Sound(JUMP_FX)
-jumping.set_volume(0.3)
+jumping.set_volume(INITIAL_VOLUME)
 
 
 

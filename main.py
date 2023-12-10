@@ -6,6 +6,7 @@ from constants import *
 import random
 from images import *
 from sounds import *
+from functions import *
 # from maps import *
 
 # Inicializar Pygame
@@ -18,15 +19,16 @@ pygame.display.set_caption("     Natacha's game")
 icon = pygame.image.load(ICON_PATH)
 pygame.display.set_icon(icon)
 
+# player_name, previous_score_number = load_score()
+
 # define variables
 tile_size = 60
 game_over = 0
-level = 1
+level = 3
 max_level = 3
 main_menu = True
-
-
-wolves_intro.play()
+previous_score_number = 15
+best_score_number = 10
 
 miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 miau_left_image = pygame.transform.flip(miau_right_image, True, False)
@@ -101,6 +103,8 @@ rip_cat = pygame.transform.scale(pygame.image.load(RIP_CAT).convert_alpha(), (WI
 
 game_over_font = pygame.font.Font(None, 80)
 
+
+
 class Button(pygame.sprite.Sprite):
     def __init__(self, x, y, normal_image, hover_image) -> None:
         self.normal_image = normal_image
@@ -140,7 +144,7 @@ class Player(pygame.sprite.Sprite):
         self.restart(x, y)
 
     def update(self, game_over):
-        col_thresh = 20
+        col_thresh = 50
         dx = 0
         dy = 0
 
@@ -253,7 +257,7 @@ class Player(pygame.sprite.Sprite):
                 if player.rect.colliderect(bat.rect):
                     player_death_sound.play()
                     player.lives -= 1
-                    self.score -= 1
+                    self.score_number -= 1
                     game_over = -1
                     print(player.lives)
                     self.spell_book = 0
@@ -266,7 +270,7 @@ class Player(pygame.sprite.Sprite):
                 if player.rect.colliderect(worm.rect):
                     player_death_sound.play()
                     player.lives -= 1
-                    self.score -= 1
+                    self.score_number -= 1
                     game_over = -1
                     print(player.lives)
                     self.spell_book = 0
@@ -278,40 +282,40 @@ class Player(pygame.sprite.Sprite):
             stars_hit = pygame.sprite.spritecollide(self, stars_group, True)
             if stars_hit:
                 star_coin_sound.play()
-                self.score += 5
-                print("Puntuación:", self.score)
+                self.score_number += 5
+                print("Puntuación:", self.score_number)
 
             pumpkin_hit = pygame.sprite.spritecollide(self, pumpkin_group, True)
             if pumpkin_hit:
                 if self.spell_book == 1:
                     star_coin_sound.play()
-                    self.score += 5
-                    print("Puntuación:", self.score)
+                    self.score_number += 5
+                    print("Puntuación:", self.score_number)
                 else:
                     player_death_sound.play()
                     player.lives -= 1
-                    self.score -= 5
+                    self.score_number -= 5
                     game_over = -1
 
             key_hit = pygame.sprite.spritecollide(self, key_group, True)
             if key_hit:
                 key_sound.play()
                 self.key_score += 1
-                self.score += 10
+                self.score_number += 10
                 print("Llaves: {0}".format(self.key_score))
 
             spell_book_hit = pygame.sprite.spritecollide(self, spell_book_group, True)
             if spell_book_hit:
                 key_sound.play()
                 self.spell_book += 1
-                self.score += 10
+                self.score_number += 10
                 print("Llaves: {0}".format(self.key_score))
 
             fire_hit = pygame.sprite.spritecollide(self, fire_group, False)
             if fire_hit:
                 player_death_sound.play()
                 player.lives -= 1
-                self.score -= 1
+                self.score_number -= 1
                 game_over = -1
                 self.spell_book = 0
 
@@ -319,7 +323,7 @@ class Player(pygame.sprite.Sprite):
             if water_hit:
                 player_death_sound.play()
                 player.lives -= 1
-                self.score -= 1
+                self.score_number -= 1
                 game_over = -1
                 self.spell_book = 0
 
@@ -327,7 +331,7 @@ class Player(pygame.sprite.Sprite):
             if lava_fire_hit:
                     player_death_sound.play()
                     player.lives -= 1
-                    self.score -= 1
+                    self.score_number -= 1
                     game_over = -1
                     self.spell_book = 0
                 
@@ -341,7 +345,7 @@ class Player(pygame.sprite.Sprite):
                 else:
                     player_death_sound.play()
                     player.lives -= 1
-                    self.score -= 2
+                    self.score_number -= 2
                     game_over = -1
                     self.spell_book = 0
 
@@ -356,7 +360,7 @@ class Player(pygame.sprite.Sprite):
                 else:
                     player_death_sound.play()
                     player.lives -= 1
-                    self.score -= 1
+                    self.score_number -= 1
                     game_over = -1
 
             #coordenadas de player
@@ -380,11 +384,19 @@ class Player(pygame.sprite.Sprite):
             if self.lives <= 0:
                 pygame.mixer.music.stop()
                 game_over_fx.play()
-                print("game over")
+                print("dead player")
                 print("keys: {0}".format(self.key_score))
                 print("lives: {0}".format(self.lives))
-                print("score: {0}".format(self.score))
-                return 
+                print("score: {0}".format(self.score_number))
+                if player.score_number >= previous_score_number:
+                    best_score_number = player.score_number
+                    print("jugador score {0}".format(player.score_number))
+                    print("mejor score {0}".format(best_score_number))
+                else:
+                    best_score_number = previous_score_number
+                    print("first player score {0}".format(player.score_number))
+                    print("first Best score {0}".format(best_score_number))
+                return
         return game_over
     
     def restart(self, x, y):
@@ -414,7 +426,7 @@ class Player(pygame.sprite.Sprite):
         # Nueva variable para rastrear la cantidad de saltos realizados
         self.jump_count = 0
         self.max_jump_count = 2  # Establece el límite de saltos consecutivos
-        self.score = 0
+        self.score_number = 0
         self.healt = 500
         self.lives = 3
         self.key_score = 0
@@ -887,7 +899,7 @@ class Miau(pygame.sprite.Sprite):
             # por ejemplo, eliminar el proyectil y reducir la vida del enemigo
             bat_collision_sound.play()
             self.kill()
-            player.score += 5
+            player.score_number += 5
             star = Star(enemy.rect.x, enemy.rect.y)
             # all_sprites.add(star)
             stars_group.add(star)
@@ -898,7 +910,7 @@ class Miau(pygame.sprite.Sprite):
             # por ejemplo, eliminar el proyectil y reducir la vida del enemigo
             bat_collision_sound.play()
             self.kill()
-            player.score += 5
+            player.score_number += 5
             star = Star(worm.rect.x, worm.rect.y - 25)
             # all_sprites.add(star)
             stars_group.add(star)
@@ -952,13 +964,34 @@ exit_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, exit_normal_button_image
 miaus = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 
+playing_music = True
+text = ""
+font_size = 60
+font = pygame.font.Font(None, font_size)
+def darw_player_input(text, font, text_color, x, y):
+    img = font.render(text, True, text_color)
+    width = img.get_width()
+    text = ""
+    screen.blit(img, (x - (width / 2), y))
+    return text
+
+wolves_intro.play()
+mute_key = pygame.K_m
+is_muted = False
+volume_up_key = pygame.K_l
+volume_down_key = pygame.K_k
+
 # Bucle principal del juego
 running = True
 while running:
-    
+
     game_over = player.update(game_over)
     # Manejo de eventos
     for event in pygame.event.get():
+        # handle text input
+        if event.type == pygame.TEXTINPUT:
+            text += event.text
+
         if event.type == pygame.QUIT:
             running = False
 
@@ -968,6 +1001,47 @@ while running:
                 player.can_shoot = True
             else:
                 player.can_shoot = False
+
+            if event.key == pygame.K_p:
+                if playing_music:
+                    pygame.mixer.music.pause()
+                show_paused_text(screen, "PAUSED", game_over_font, (WIDTH / 2, HEIGHT / 2), RED)
+                wait_user()
+                if playing_music:
+                    pygame.mixer.music.unpause()
+
+            if event.key == mute_key:
+                is_muted = not is_muted
+                if is_muted:
+                    pygame.mixer.music.pause()
+                else:
+                    pygame.mixer.music.unpause()
+
+            if event.key == volume_up_key:
+                current_volume = min(1.0, current_volume + 0.1)
+                wolves_intro.set_volume(current_volume)
+                win_game.set_volume(current_volume)
+                game_over_fx.set_volume(current_volume)
+                miau_cat_sound.set_volume(current_volume)
+                star_coin_sound.set_volume(current_volume)
+                bat_collision_sound.set_volume(current_volume)
+                player_death_sound.set_volume(current_volume)
+                key_sound.set_volume(current_volume)
+                door_open_sound.set_volume(current_volume)
+                jumping.set_volume(current_volume)
+            elif event.key == volume_down_key:
+                current_volume = max(0.0, current_volume - 0.1)
+                wolves_intro.set_volume(current_volume)
+                win_game.set_volume(current_volume)
+                game_over_fx.set_volume(current_volume)
+                miau_cat_sound.set_volume(current_volume)
+                star_coin_sound.set_volume(current_volume)
+                bat_collision_sound.set_volume(current_volume)
+                player_death_sound.set_volume(current_volume)
+                key_sound.set_volume(current_volume)
+                door_open_sound.set_volume(current_volume)
+                jumping.set_volume(current_volume)
+        
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
@@ -998,6 +1072,17 @@ while running:
             print("Exit button pressed")
             running = False
     else:
+        # best_score_number = previous_score_number
+        print("best {0} y score {1}".format(best_score_number, player.score_number))
+        if player.score_number >= best_score_number:
+            best_score_number = player.score_number
+            print("player score {0}".format(player.score_number))
+            print("Best score {0}".format(best_score_number))
+        else:
+            best_score_number = previous_score_number
+            print("second player score {0}".format(player.score_number))
+            print("second Best score {0}".format(best_score_number))
+        # save_score(player_name, best_score_number)
         # Actualizar
         platform_group.update()
         spell_book_group.update()
@@ -1042,7 +1127,7 @@ while running:
         screen.blit(spell_book_score, (450, 10))
 
         # Renderizar texto para Score
-        score_text = font.render("Score: {0}".format(player.score), True, GOLD)
+        score_text = font.render("Score: {0}".format(player.score_number), True, GOLD)
         screen.blit(score_text, (150, 10))
 
         # Renderizar texto para Lives
@@ -1053,31 +1138,63 @@ while running:
         keys_text = font.render("Keys: {0}".format(player.key_score), True, GOLD)
         screen.blit(keys_text, (650, 10))
 
-        if player.lives <= 0:
-            game_over_text = game_over_font.render("Game Over", True, RED)
-            screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
+        # Renderizar texto para Keys
+        best_score_text = font.render("Best score: {0}".format(best_score_number), True, BLUE)
+        screen.blit(best_score_text, (820, 10))
+        print("mejor numero {0}".format(best_score_number))
 
         if player.lives <= 0:
-            # Mueve al jugador hacia abajo hasta que colisione con un tile
+
             player.image = rip_cat
-            player.rect.y += 2
+            player.rect.y += 1
             for tile in world.tile_list:
                 if tile[1].colliderect(player.rect.x, player.rect.y, player.width, player.height):
                     # El jugador ha colisionado con un tile, detén el movimiento hacia abajo
                     player.rect.y = tile[1].top - player.height
                     break
-                
-            if start_button.draw(screen):
-                print("reset")
+
+            game_over_text = game_over_font.render("Game Over", True, RED)
+            screen.blit(game_over_text, (WIDTH / 2.9, HEIGHT / 2))
+
+            print_player_score = game_over_font.render("Score {0}".format(player.score_number), True, YELLOW)
+            screen.blit(print_player_score, (WIDTH / 2.6, HEIGHT / 4))
+
+            pygame.mixer.music.stop()
+
+            # if tile[1].colliderect(player.rect.x, player.rect.y, player.width, player.height):
+            #         # El jugador ha colisionado con un tile, detén el movimiento hacia abajo
+            #         player.rect.y = tile[1].top - player.height 
+
+            # show_paused_text(screen, "", game_over_font, (WIDTH / 2, HEIGHT / 2), RED)
+            # wait_user()
+            
+            if play_button.draw(screen):
+                print("Restart button pressed")
                 pygame.mixer.music.play(-1)
                 empty_groups()
+                level = 1  # Reiniciar al nivel 1
+                world_data = [[-1] * COLS for _ in range(ROWS)]
+                with open("level1_data.csv", newline="") as csvfile:
+                    reader = csv.reader(csvfile, delimiter=",")
+                    for x, row in enumerate(reader):
+                        for y, tile in enumerate(row):
+                            world_data[x][y] = int(tile)
                 world.restart(world_data)
-                player.restart(x=10, y= 200)
+                player.restart(x=10, y=200)
                 game_over = 0
 
+            if exit_button.draw(screen):
+                print("Exit button pressed")
+                running = False
+                
         if game_over == 1:
+            print("cruza puerta")
+            print("lives {0} y score {1}".format(player.lives, player.score_number))
             previous_lives = player.lives
-            previous_score = player.score
+            previous_score_number = player.score_number
+            if player.score_number > previous_score_number:
+                best_score_number = player.score_number
+            print("previous lives {0} y previous score {1}".format(previous_lives, previous_score_number))
             level += 1
             empty_groups()
             if level <= max_level:
@@ -1091,34 +1208,47 @@ while running:
                 world.restart(world_data)
                 player.restart(x=10, y= 200)
                 game_over = 0
-                player.score = previous_score
+                # player.score_number
+                player.score_number = previous_score_number
                 player.lives = previous_lives
+                print("paso por level <= max_level")
+                # print("best score {0}, score {1}, previous {2}".format(best_score_number, player.score_number, previous_score_number))
             else:
+                previous_lives = player.lives
+                if player.score_number > previous_score_number:
+                    best_score_number = player.score_number
+                print("best score {0}, score {1}, previous {2}".format(best_score_number, player.score_number, previous_score_number))
                 screen.fill(BLACK)
                 door_open_sound.stop()
                 pygame.mixer.music.stop()
-                # win_game.play(0)
                 game_over_text = game_over_font.render("You Win", True, WHITE)
                 screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
                 player.restart(x=-100, y=-100)
+                print("paso por level > max_level")
+                final_score = best_score_number
+                print("final_score {0}".format(final_score))
+                show_paused_text(screen, "", game_over_font, (WIDTH / 2, HEIGHT / 2), RED)
+                wait_user()
 
         screen.blit(player.image, player.rect)
 
-    # #Dibujar hitbox
-    # for miau in miaus:
-    #     pygame.draw.rect(screen, RED, miau.rect, 2)
+    
 
-    # for fire in fire_group:
-    #     pygame.draw.rect(screen, WHITE, fire.rect, 2)
+    #Dibujar hitbox
+    for miau in miaus:
+        pygame.draw.rect(screen, RED, miau.rect, 2)
 
-    # for lava in lava_group:
-    #     pygame.draw.rect(screen, GRAY, lava.rect, 2)
+    for fire in fire_group:
+        pygame.draw.rect(screen, WHITE, fire.rect, 2)
 
-    # for bat in bat_group:
-    #     pygame.draw.rect(screen, ORANGE, bat.rect, 2)
+    for lava in lava_fire_group:
+        pygame.draw.rect(screen, GRAY, lava.rect, 2)
 
-    # #Dibujar hitbox del jugador
-    # pygame.draw.rect(screen, GREEN, player.rect, 2)
+    for bat in bat_group:
+        pygame.draw.rect(screen, ORANGE, bat.rect, 2)
+
+    #Dibujar hitbox del jugador
+    pygame.draw.rect(screen, GREEN, player.rect, 2)
 
     # Actualizar la pantalla
     pygame.display.flip()
