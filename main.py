@@ -19,16 +19,19 @@ pygame.display.set_caption("     Natacha's game")
 icon = pygame.image.load(ICON_PATH)
 pygame.display.set_icon(icon)
 
-# player_name, previous_score_number = load_score()
+clock = pygame.time.Clock()
+elapsed_time = 0
+minute = 0
+
+player_name, best_score_number = load_score()
 
 # define variables
 tile_size = 60
 game_over = 0
-level = 3
+level = 1
 max_level = 3
 main_menu = True
-previous_score_number = 15
-best_score_number = 10
+previous_score_number = best_score_number
 
 miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 miau_left_image = pygame.transform.flip(miau_right_image, True, False)
@@ -147,6 +150,7 @@ class Player(pygame.sprite.Sprite):
         col_thresh = 50
         dx = 0
         dy = 0
+        
 
         if game_over == 0:
             # Obtener las teclas presionadas
@@ -986,7 +990,6 @@ volume_down_key = pygame.K_k
 # Bucle principal del juego
 running = True
 while running:
-
     game_over = player.update(game_over)
     # Manejo de eventos
     for event in pygame.event.get():
@@ -1051,6 +1054,8 @@ while running:
             elif event.key == pygame.K_d:
                 player.direction = 1
 
+    elapsed_time += clock.tick(FPS)
+
     if main_menu == True:
         # Verificar si el cursor está sobre el botón play_button
         if play_button.rect.collidepoint(pygame.mouse.get_pos()):
@@ -1066,7 +1071,10 @@ while running:
         screen.blit(background_image, (0, 0))
 
         if play_button.draw(screen):
+            elapsed_time = 0
+            minute = 0
             print("Play button pressed")
+            wolves_intro.stop()
             pygame.mixer.music.play(-1)
             main_menu = False
 
@@ -1127,23 +1135,31 @@ while running:
         font = pygame.font.Font(None, 36)  # Puedes ajustar el tamaño de la fuente según tus preferencias
 
         spell_book_score = font.render("Spell Book: {0}".format(player.spell_book), True, GOLD)
-        screen.blit(spell_book_score, (450, 10))
+        screen.blit(spell_book_score, (350, 10))
 
         # Renderizar texto para Score
         score_text = font.render("Score: {0}".format(player.score_number), True, GOLD)
-        screen.blit(score_text, (150, 10))
+        screen.blit(score_text, (80, 10))
 
         # Renderizar texto para Lives
         lives_text = font.render("Lives: {0}".format(int(player.lives)), True, GOLD)
-        screen.blit(lives_text, (300, 10))
+        screen.blit(lives_text, (220, 10))
 
         # Renderizar texto para Keys
         keys_text = font.render("Keys: {0}".format(player.key_score), True, GOLD)
-        screen.blit(keys_text, (650, 10))
+        screen.blit(keys_text, (550, 10))
+
+        # Renderizar texto para Timer
+        seconds = elapsed_time // 1000
+        if seconds > 59:
+            minute += 1
+            elapsed_time = 0
+        timer_text = font.render("Time: {0:02d}:{1:02d}".format(minute, seconds), True, GOLD)
+        screen.blit(timer_text, (675, 10))
 
         # Renderizar texto para Keys
-        best_score_text = font.render("Best score: {0}".format(best_score_number), True, BLUE)
-        screen.blit(best_score_text, (820, 10))
+        best_score_text = font.render("Best score: {0}".format(best_score_number), True, RED)
+        screen.blit(best_score_text, (830, 10))
         print("mejor numero {0}".format(best_score_number))
 
         if game_over == -1:
@@ -1154,11 +1170,10 @@ while running:
                     player.score_number = 0
             if player.rect.y < 0:
                 for _ in range(1):
-                    key_group.empty()
-                    nueva_llave = Key(1020, 605)  # Ajusta las coordenadas (x, y) según tus necesidades
-                    key_group.add(nueva_llave)
+                    new_key = Key(1020, 665)  # Ajusta las coordenadas (x, y) según tus necesidades
+                    key_group.add(new_key)
 
-        if player.lives <= 0:
+        if player.lives <= 0 or minute >= 3:
 
             player.image = rip_cat
             player.rect.y += 1
@@ -1167,7 +1182,7 @@ while running:
                     # El jugador ha colisionado con un tile, detén el movimiento hacia abajo
                     player.rect.y = tile[1].top - player.height
                     break
-
+            # screen.fill(BLACK)
             game_over_text = game_over_font.render("Game Over", True, RED)
             game_over_text_rect = game_over_text.get_rect()
             game_over_text_rect.center = (WIDTH / 2, HEIGHT / 2)
@@ -1177,23 +1192,19 @@ while running:
             print_player_score_rect = print_player_score.get_rect()
             print_player_score_rect.center = (WIDTH / 2, HEIGHT / 3)
             screen.blit(print_player_score, print_player_score_rect)
-
             pygame.mixer.music.stop()
-
-            # if tile[1].colliderect(player.rect.x, player.rect.y, player.width, player.height):
-            #         # El jugador ha colisionado con un tile, detén el movimiento hacia abajo
-            #         player.rect.y = tile[1].top - player.height 
-
-            # show_paused_text(screen, "", game_over_font, (WIDTH / 2, HEIGHT / 2), RED)
-            # wait_user()
+            if player.score_number > previous_score_number:
+                best_score_number = player.score_number
+                save_score(player_name, best_score_number)
             
             if play_button.draw(screen):
+                elapsed_time = 0
+                minute = 0
                 print("Restart button pressed")
                 pygame.mixer.music.play(-1)
                 empty_groups()
                 level = 1  # Reiniciar al nivel 1
-                world_data = [[-1] * COLS for _ in range(ROWS)]
-                with open("level1_data.csv", newline="") as csvfile:
+                with open("level{0}_data.csv".format(level), newline="") as csvfile:
                     reader = csv.reader(csvfile, delimiter=",")
                     for x, row in enumerate(reader):
                         for y, tile in enumerate(row):
@@ -1205,6 +1216,9 @@ while running:
             if exit_button.draw(screen):
                 print("Exit button pressed")
                 running = False
+
+                # show_paused_text(screen, "", game_over_font, (WIDTH / 2, HEIGHT / 2), RED)
+                # wait_user()
                 
         if game_over == 1:
             print("cruza puerta")
@@ -1217,10 +1231,8 @@ while running:
             level += 1
             empty_groups()
             if level <= max_level:
-                world_data = [[-1] * COLS for _ in range(ROWS)]
                 with open("level{0}_data.csv".format(level), newline="") as csvfile:
                     reader = csv.reader(csvfile, delimiter=",")
-                    print("level{0}_data.csv".format(level))
                     for x, row in enumerate(reader):
                         for y, tile in enumerate(row):
                             world_data[x][y] = int(tile)
@@ -1236,6 +1248,7 @@ while running:
                 previous_lives = player.lives
                 if player.score_number > previous_score_number:
                     best_score_number = player.score_number
+                    save_score()
                 print("best score {0}, score {1}, previous {2}".format(best_score_number, player.score_number, previous_score_number))
                 screen.fill(BLACK)
                 door_open_sound.stop()
@@ -1273,7 +1286,7 @@ while running:
     pygame.display.flip()
 
     # Controlar la velocidad de actualización
-    pygame.time.Clock().tick(FPS)
+    # clock.tick(FPS)
 
 # Salir del juego
 pygame.quit()

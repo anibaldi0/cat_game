@@ -1,6 +1,7 @@
 
 import pygame
 
+
 def terminar():
     """
     Esta función no toma parametros.
@@ -52,7 +53,7 @@ def show_paused_text(surface, texto, fuente, coordenadas, color_fuente):
     surface.blit(paused_text, rect_paused_text)
     pygame.display.flip()
 
-def save_score(player_name, score_number):
+def save_score(player_name, best_score_number):
     """
     esta funcion recibe 2 parametros y guarda el nombre y mayor score.
     maneja 3 excepciones, uno para buscar y abrir el archivo donde se guardaran los datos, 
@@ -76,9 +77,9 @@ def save_score(player_name, score_number):
     except (FileNotFoundError, ValueError, IndexError):
         previous_score_number = 0
 
-    if score_number > previous_score_number:
+    if best_score_number > previous_score_number:
         with open("score.txt", "w") as file:
-            file.write("{0} {1}\n".format(player_name, score_number))
+            file.write("{0} {1}\n".format(player_name, best_score_number))
 
 
 def load_score():
@@ -88,8 +89,8 @@ def load_score():
             if line:
                 values = line.split()
                 if len(values) == 2:
-                    player_name, score_number = values
-                    return player_name, int(score_number)
+                    player_name, best_score_number = values
+                    return player_name, int(best_score_number)
                 else:
                     print("Invalid data format in score.txt. Using default values.")
                     return None, 0
@@ -97,7 +98,5 @@ def load_score():
                 return None, 0
     except FileNotFoundError:
         return None, 0
-
-
 
 
