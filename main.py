@@ -62,11 +62,11 @@ lava_floor_images = [pygame.transform.scale(pygame.image.load(image).convert_alp
 
 ice_lava_floor_image = pygame.transform.scale(pygame.image.load(ICE_LAVA_FLOOR).convert_alpha(), (WIDTH / 18, HEIGHT / 12))
 
-worm_left_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 18, HEIGHT / 22)) for image in WORM_IMAGE_LIST]
-worm_right_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(), 
-                        (WIDTH // 16, HEIGHT // 22)), True, False) for image in WORM_IMAGE_LIST]
+tree_right_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 12, HEIGHT / 8)) for image in TREE_IMAGES_LIST]
+tree_left_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(), 
+                        (WIDTH // 12, HEIGHT // 8)), True, False) for image in TREE_IMAGES_LIST]
 
-pumpkin_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 20, HEIGHT / 16)) for image in PUMPKIN_IMAGE_LIST]
+pumpkin_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 20, HEIGHT / 16)) for image in PUMPKIN_IMAGES_LIST]
 
 fire_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 20, HEIGHT / 14)) for image in FIRE_IMAGES_LIST]
 
@@ -265,9 +265,9 @@ class Player(pygame.sprite.Sprite):
                 player.rect.x = 10
                 player.rect.y = 200
 
-            worm_hit = pygame.sprite.spritecollide(player, worm_group, False)
-            for worm in worm_hit:
-                if player.rect.colliderect(worm.rect):
+            tree_hit = pygame.sprite.spritecollide(player, tree_group, False)
+            for tree in tree_hit:
+                if player.rect.colliderect(tree.rect):
                     player_death_sound.play()
                     player.lives -= 1
                     self.score_number -= 1
@@ -503,8 +503,8 @@ class World():
                     platform = Platform(col_count * tile_size, row_count * tile_size + 35, -1, 6)
                     platform_group.add(platform)
                 if tile == 3:
-                    worm = Worm(col_count * tile_size, row_count * tile_size + 35, 4)
-                    worm_group.add(worm)
+                    tree = Tree(col_count * tile_size - 60, row_count * tile_size - 15, 4)
+                    tree_group.add(tree)
                 if tile == 14:
                     spell_book = SpellBook(col_count * tile_size, row_count * tile_size - 10)
                     spell_book_group.add(spell_book)
@@ -560,7 +560,7 @@ class Platform(pygame.sprite.Sprite):
         # Lógica de actualización del bat (movimiento por el eje x)
         self.rect.x += self.move_direction * self.move_x * 3
         self.move_couter += 1
-        if abs(self.move_couter) > 120:
+        if abs(self.move_couter) > 80:
             self.move_direction *= -1
             self.move_couter *= -1
 
@@ -780,42 +780,44 @@ class Star(pygame.sprite.Sprite):
         # Renderizar la hitbox de la estrella
         screen.blit(self.star_hitbox, self.star_hitbox_rect)
 
-class Worm(pygame.sprite.Sprite):
+class Tree(pygame.sprite.Sprite):
     def __init__(self, x, y, speed) -> None:
         super().__init__()
-        self.worm_index = 0
-        self.worm_left_images = worm_left_images
-        self.image = worm_left_images[0]
+        self.tree_index = 0
+        self.tree_left_images = tree_left_images
+        self.tree_right_images = tree_right_images
+        self.image = tree_left_images[0]
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y - 10
-        self.speed = speed
+        self.rect.y = y
+        self.speed = TREE_SPEED
         self.move_couter = 0
         self.direction = 0
         self.width = self.image.get_width()
         self.height = self.image.get_height()
-        self.worm_hitbox = pygame.Surface((self.rect.width, self.rect.height))
-        self.worm_hitbox.fill(GREEN)
-        self.worm_hitbox_rect = self.worm_hitbox.get_rect()  # Agregar esta línea
-        # self.player_hitbox = self.worm_hitbox.get_rect()  # Agregar esta línea
+        self.tree_hitbox = pygame.Surface((self.rect.width, self.rect.height))
+        self.tree_hitbox.fill(GREEN)
+        self.tree_hitbox_rect = self.tree_hitbox.get_rect()  # Agregar esta línea
+        # self.player_hitbox = self.bat_hitbox.get_rect()  # Agregar esta línea
 
     def update(self):
         # Lógica de actualización del bat (movimiento por el eje x)
         self.rect.x += self.speed
         self.move_couter += 1
-        if abs(self.move_couter) > 70:
+        if abs(self.move_couter) > 40:
             self.speed *= -1
             self.move_couter *= -1
 
                 # Cambiar la imagen del murciélago según la dirección
         if self.speed > 0:  # Si el murciélago se mueve hacia la derecha
-            self.image = self.worm_left_images[self.worm_index // 5]
+            self.image = self.tree_left_images[self.tree_index // 5]
+            
         else:  # Si el murciélago se mueve hacia la izquierda
-            self.image = self.worm_left_images[self.worm_index // 5]
+            self.image = self.tree_right_images[self.tree_index // 5]
 
-        self.worm_index += 1
-        if self.worm_index >= len(self.worm_left_images) * 5:
-            self.worm_index = 0
+        self.tree_index += 1
+        if self.tree_index >= len(self.tree_left_images) * 5:
+            self.tree_index = 0
 
 class Bat(pygame.sprite.Sprite):
     def __init__(self, x, y, speed) -> None:
@@ -904,23 +906,23 @@ class Miau(pygame.sprite.Sprite):
             # all_sprites.add(star)
             stars_group.add(star)
 
-        worm_hit = pygame.sprite.spritecollide(self, worm_group, True)
-        for worm in worm_hit:
+        tree_hit = pygame.sprite.spritecollide(self, tree_group, False)
+        for tree in tree_hit:
             # Aquí puedes agregar lógica adicional si es necesario
             # por ejemplo, eliminar el proyectil y reducir la vida del enemigo
-            bat_collision_sound.play()
+            # bat_collision_sound.play()
             self.kill()
-            player.score_number += 5
-            star = Star(worm.rect.x, worm.rect.y - 25)
-            # all_sprites.add(star)
-            stars_group.add(star)
+            # player.score_number += 5
+            # star = Star(tree.rect.x, tree.rect.y - 25)
+            # # all_sprites.add(star)
+            # stars_group.add(star)
 
 def empty_groups():
     platform_group.empty()
     spell_book_group.empty()
     water_group.empty()
     lava_floor_group.empty()
-    worm_group.empty()
+    tree_group.empty()
     pumpkin_group.empty()
     bat_group.empty()
     key_group.empty()
@@ -948,7 +950,7 @@ spell_book_group = pygame.sprite.Group()
 water_group = pygame.sprite.Group()
 lava_floor_group = pygame.sprite.Group()
 pumpkin_group = pygame.sprite.Group()
-worm_group = pygame.sprite.Group()
+tree_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 fire_group = pygame.sprite.Group()
 lava_fire_group = pygame.sprite.Group()
@@ -1088,7 +1090,7 @@ while running:
         spell_book_group.update()
         water_group.update()
         lava_floor_group.update()
-        worm_group.update()
+        tree_group.update()
         pumpkin_group.update()
         exit_group.update()
         fire_group.update()
@@ -1102,20 +1104,21 @@ while running:
         screen.blit(background_spider_web, (0, 0))
         # screen.fill(BLACK)
         
-
+        screen.blit(player.image, player.rect)
         world.draw()
         # play_button.draw(screen)
         # exit_button.draw(screen)
+        key_group.draw(screen)
         platform_group.draw(screen)
         spell_book_group.draw(screen)
         water_group.draw(screen)
         lava_floor_group.draw(screen)
-        worm_group.draw(screen)
+        tree_group.draw(screen)
         pumpkin_group.draw(screen)
         exit_group.draw(screen)
         fire_group.draw(screen)
         lava_fire_group.draw(screen)
-        key_group.draw(screen)
+        # key_group.draw(screen)
         bat_group.draw(screen)
         stars_group.draw(screen)
         all_sprites.draw(screen)
@@ -1143,6 +1146,18 @@ while running:
         screen.blit(best_score_text, (820, 10))
         print("mejor numero {0}".format(best_score_number))
 
+        if game_over == -1:
+            if player.key_score >= 1:
+                player.key_score = 0
+                player.score_number -= 10
+                if player.score_number < 0:
+                    player.score_number = 0
+            if player.rect.y < 0:
+                for _ in range(1):
+                    key_group.empty()
+                    nueva_llave = Key(1020, 605)  # Ajusta las coordenadas (x, y) según tus necesidades
+                    key_group.add(nueva_llave)
+
         if player.lives <= 0:
 
             player.image = rip_cat
@@ -1154,10 +1169,14 @@ while running:
                     break
 
             game_over_text = game_over_font.render("Game Over", True, RED)
-            screen.blit(game_over_text, (WIDTH / 2.9, HEIGHT / 2))
+            game_over_text_rect = game_over_text.get_rect()
+            game_over_text_rect.center = (WIDTH / 2, HEIGHT / 2)
+            screen.blit(game_over_text, game_over_text_rect)
 
             print_player_score = game_over_font.render("Score {0}".format(player.score_number), True, YELLOW)
-            screen.blit(print_player_score, (WIDTH / 2.6, HEIGHT / 4))
+            print_player_score_rect = print_player_score.get_rect()
+            print_player_score_rect.center = (WIDTH / 2, HEIGHT / 3)
+            screen.blit(print_player_score, print_player_score_rect)
 
             pygame.mixer.music.stop()
 
@@ -1222,7 +1241,9 @@ while running:
                 door_open_sound.stop()
                 pygame.mixer.music.stop()
                 game_over_text = game_over_font.render("You Win", True, WHITE)
-                screen.blit(game_over_text, (WIDTH / 2.5, HEIGHT / 2))
+                game_over_text_rect = game_over_text.get_rect()
+                game_over_text_rect.center = (WIDTH / 2, HEIGHT / 2)
+                screen.blit(game_over_text, game_over_text_rect)
                 player.restart(x=-100, y=-100)
                 print("paso por level > max_level")
                 final_score = best_score_number
@@ -1230,25 +1251,23 @@ while running:
                 show_paused_text(screen, "", game_over_font, (WIDTH / 2, HEIGHT / 2), RED)
                 wait_user()
 
-        screen.blit(player.image, player.rect)
+        # screen.blit(player.image, player.rect)
 
-    
+    # #Dibujar hitbox
+    # for miau in miaus:
+    #     pygame.draw.rect(screen, RED, miau.rect, 2)
 
-    #Dibujar hitbox
-    for miau in miaus:
-        pygame.draw.rect(screen, RED, miau.rect, 2)
+    # for fire in fire_group:
+    #     pygame.draw.rect(screen, WHITE, fire.rect, 2)
 
-    for fire in fire_group:
-        pygame.draw.rect(screen, WHITE, fire.rect, 2)
+    # for lava in lava_fire_group:
+    #     pygame.draw.rect(screen, GRAY, lava.rect, 2)
 
-    for lava in lava_fire_group:
-        pygame.draw.rect(screen, GRAY, lava.rect, 2)
+    # for bat in bat_group:
+    #     pygame.draw.rect(screen, ORANGE, bat.rect, 2)
 
-    for bat in bat_group:
-        pygame.draw.rect(screen, ORANGE, bat.rect, 2)
-
-    #Dibujar hitbox del jugador
-    pygame.draw.rect(screen, GREEN, player.rect, 2)
+    # #Dibujar hitbox del jugador
+    # pygame.draw.rect(screen, GREEN, player.rect, 2)
 
     # Actualizar la pantalla
     pygame.display.flip()

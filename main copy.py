@@ -74,7 +74,7 @@ ice_middle_floor_image = pygame.transform.scale(pygame.image.load(ICE_MIDDLE_FLO
 
 ice_platform_image = pygame.transform.scale(pygame.image.load(ICE_MIDDLE_FLOOR).convert_alpha(), (WIDTH / 16, HEIGHT / 20))
 
-water_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 10)) for image in WATER_IMAGES_LIST]
+water_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 16, HEIGHT / 10)) for image in TREE_IMAGES_LIST]
 
 start_button_image = pygame.transform.scale(pygame.image.load(START_BUTTON_IMAGE).convert_alpha(), (WIDTH / 10, HEIGHT / 10))
 start_button_pressed_image = pygame.transform.scale(pygame.image.load(START_BUTTON_PRESSED_IMAGE).convert_alpha(), (WIDTH / 10, HEIGHT / 10))

@@ -63,17 +63,17 @@ EXIT_HOVER_BUTTON_IMAGE = "images/exit_button_hover.png"
 START_HOVER_BUTTON_IMAGE = "images/start_button_hover.png"
 START_NORMAL_BUTTON_IMAGE = "images/start_button_normal.png"
 
-WATER_IMAGES_LIST = ["images/water_01.png",
-                    "images/water_02.png",
-                    "images/water_03.png",
+TREE_IMAGES_LIST = ["images/tree_left_01.png",
+                    "images/tree_left_02.png",
+                    "images/tree_left_03.png"
                     ]
 
-WORM_IMAGE_LIST = ["images/worm_right_01.png",
-                "images/worm_right_02.png",
-                "images/worm_right_03.png"
+WATER_IMAGES_LIST = ["images/water_01.png",
+                "images/water_02.png",
+                "images/water_03.png",
                 ]
 
-PUMPKIN_IMAGE_LIST = ["images/calabaza_01.png",
+PUMPKIN_IMAGES_LIST = ["images/calabaza_01.png",
                     "images/calabaza_02.png",
                     ]
 
