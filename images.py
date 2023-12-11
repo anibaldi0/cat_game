@@ -74,6 +74,8 @@ WATER_IMAGES_LIST = ["images/water_01.png",
                 ]
 
 PUMPKIN_IMAGES_LIST = ["images/calabaza_01.png",
+                    "images/calabaza_01.png",
+                    "images/calabaza_02.png",
                     "images/calabaza_02.png",
                     ]
 

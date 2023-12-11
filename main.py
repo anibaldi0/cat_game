@@ -987,15 +987,69 @@ is_muted = False
 volume_up_key = pygame.K_l
 volume_down_key = pygame.K_k
 
+def input_name():
+    global player_name
+    global game_over
+    global best_score_number
+    input_active = True
+    font = pygame.font.Font(None, 36)
+    input_text = ""
+    cursor_blink = 0
+
+    while input_active:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN and len(input_text) == 3:
+                    input_active = False
+                elif event.key == pygame.K_BACKSPACE:
+                    input_text = input_text[:-1]
+                elif event.unicode.isalpha() and len(input_text) < 3:
+                    input_text += event.unicode.upper()
+        screen.fill((0, 0, 0))
+        if play_button.draw(screen):
+            print("Restart button pressed")
+            pygame.mixer.music.play(-1)
+            empty_groups()
+            level = 1  # Reiniciar al nivel 1
+            with open("level{0}_data.csv".format(level), newline="") as csvfile:
+                reader = csv.reader(csvfile, delimiter=",")
+                for x, row in enumerate(reader):
+                    for y, tile in enumerate(row):
+                        world_data[x][y] = int(tile)
+            world.restart(world_data)
+            player.restart(x=10, y=200)
+            game_over = 0
+            input_active = False
+        if exit_button.draw(screen):
+            print("Exit button pressed")
+            input_active = False
+        text_surface = font.render("Name: {0}".format(input_text), True, WHITE)
+        # Cursor intermitente
+        cursor_blink = (cursor_blink + 1) % 30  # Controla la velocidad de parpadeo
+        if cursor_blink < 15:
+            pygame.draw.line(screen, (255, 255, 255), (WIDTH // 2 - text_surface.get_width() // 2 + text_surface.get_width() + 2,
+                                                  (HEIGHT - 25) // 2), (WIDTH // 2 - text_surface.get_width() // 2 + text_surface.get_width() + 2,
+                                                                  (HEIGHT - 25) // 2 + text_surface.get_height()), 2)
+
+        screen.blit(text_surface, (WIDTH // 2 - text_surface.get_width() // 2, HEIGHT // 2 - text_surface.get_height() // 2))
+        pygame.display.flip()
+        clock.tick(FPS)
+
+    player_name = input_text
+    return player_name
+
 # Bucle principal del juego
 running = True
 while running:
     game_over = player.update(game_over)
     # Manejo de eventos
     for event in pygame.event.get():
-        # handle text input
-        if event.type == pygame.TEXTINPUT:
-            text += event.text
+        # # handle text input
+        # if event.type == pygame.TEXTINPUT:
+        #     text += event.text
 
         if event.type == pygame.QUIT:
             running = False
@@ -1158,7 +1212,7 @@ while running:
         screen.blit(timer_text, (675, 10))
 
         # Renderizar texto para Keys
-        best_score_text = font.render("Best score: {0}".format(best_score_number), True, RED)
+        best_score_text = font.render("Best score:{0} {1}".format(player_name, best_score_number), True, ORANGE)
         screen.blit(best_score_text, (830, 10))
         print("mejor numero {0}".format(best_score_number))
 
@@ -1174,7 +1228,6 @@ while running:
                     key_group.add(new_key)
 
         if player.lives <= 0 or minute >= 3:
-
             player.image = rip_cat
             player.rect.y += 1
             for tile in world.tile_list:
@@ -1195,6 +1248,7 @@ while running:
             pygame.mixer.music.stop()
             if player.score_number > previous_score_number:
                 best_score_number = player.score_number
+                input_name()
                 save_score(player_name, best_score_number)
             
             if play_button.draw(screen):
@@ -1221,6 +1275,7 @@ while running:
                 # wait_user()
                 
         if game_over == 1:
+            player_name, best_score_number = load_score()
             print("cruza puerta")
             print("lives {0} y score {1}".format(player.lives, player.score_number))
             previous_lives = player.lives
