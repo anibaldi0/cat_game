@@ -7,6 +7,7 @@ import random
 from images import *
 from sounds import *
 from functions import *
+from button import *
 # from maps import *
 
 # Inicializar Pygame
@@ -28,10 +29,14 @@ player_name, best_score_number = load_score()
 # define variables
 tile_size = 60
 game_over = 0
-level = 1
+level = 2
 max_level = 3
-main_menu = True
+start_game = False
+menu_state = "main"
 previous_score_number = best_score_number
+game_paused = False
+running = True
+pausa_timer = False
 
 miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 miau_left_image = pygame.transform.flip(miau_right_image, True, False)
@@ -93,8 +98,8 @@ ice_platform_image = pygame.transform.scale(pygame.image.load(ICE_MIDDLE_FLOOR).
 
 water_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 18, HEIGHT / 10)) for image in WATER_IMAGES_LIST]
 
-start_normal_button_image = pygame.transform.scale(pygame.image.load(START_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 14))
-start_hover_button_image = pygame.transform.scale(pygame.image.load(START_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 14))
+restart_normal_button_image = pygame.transform.scale(pygame.image.load(RESTART_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 14))
+restart_hover_button_image = pygame.transform.scale(pygame.image.load(RESTART_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 14))
 
 play_normal_button_image = pygame.transform.scale(pygame.image.load(PLAY_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
 play_hover_button_image = pygame.transform.scale(pygame.image.load(PLAY_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
@@ -102,42 +107,27 @@ play_hover_button_image = pygame.transform.scale(pygame.image.load(PLAY_HOVER_BU
 exit_normal_button_image = pygame.transform.scale(pygame.image.load(EXIT_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
 exit_hover_button_image = pygame.transform.scale(pygame.image.load(EXIT_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
 
+pause_button_image = pygame.transform.scale(pygame.image.load(PAUSE_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 22, HEIGHT / 28))
+pause_hover_button_image = pygame.transform.scale(pygame.image.load(PAUSE_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 22, HEIGHT / 28))
+
+options_hover_button_image = pygame.transform.scale(pygame.image.load(OPTIONS_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+options_normal_button_image = pygame.transform.scale(pygame.image.load(OPTIONS_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+
+resume_hover_button_image = pygame.transform.scale(pygame.image.load(RESUME_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+resume_normal_button_image = pygame.transform.scale(pygame.image.load(RESUME_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+
+score_hover_button_image = pygame.transform.scale(pygame.image.load(SCORE_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+score_normal_button_image = pygame.transform.scale(pygame.image.load(SCORE_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+
+back_hover_button_image = pygame.transform.scale(pygame.image.load(BACK_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+back_normal_button_image = pygame.transform.scale(pygame.image.load(BACK_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+
+high_volume_button_image = pygame.transform.scale(pygame.image.load(HIGH_VOLUME_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+low_volume_button_image = pygame.transform.scale(pygame.image.load(LOW_VOLUME_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+
 rip_cat = pygame.transform.scale(pygame.image.load(RIP_CAT).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 
 game_over_font = pygame.font.Font(None, 80)
-
-
-
-class Button(pygame.sprite.Sprite):
-    def __init__(self, x, y, normal_image, hover_image) -> None:
-        self.normal_image = normal_image
-        self.hover_image = hover_image
-        self.image = normal_image
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.clicked = False
-        # self.label = label
-
-    def draw(self, screen):
-        action = False
-        mouse_pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_pos):
-            self.image = self.hover_image
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                print("press")
-                action = True
-                # self.image = start_button_pressed_image
-                self.clicked = True
-        else:
-            self.image = self.normal_image
-
-        if pygame.mouse.get_pressed()[0] == 0:
-            # self.image = start_button_image
-            self.clicked = False
-        
-        screen.blit(self.image, self.rect)
-        return action
 
 
 # Definir la clase del jugador
@@ -962,9 +952,16 @@ key_group = pygame.sprite.Group()
 bat_group = pygame.sprite.Group()
 world = World(world_data)
 stars_group = pygame.sprite.Group()
-start_button = Button(WIDTH / 2 - 50, HEIGHT / 2 + 100, start_normal_button_image, start_hover_button_image)
+restart_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 250, restart_normal_button_image, restart_hover_button_image)
 play_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 250, play_normal_button_image, play_hover_button_image)
 exit_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, exit_normal_button_image, exit_hover_button_image)
+pause_button = Button(1000, 10, pause_button_image, pause_hover_button_image)
+resume_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 250, resume_normal_button_image, resume_hover_button_image)
+options_button = Button(100, 100, options_normal_button_image, options_hover_button_image)
+score_button = Button(WIDTH / 2 - 50, HEIGHT / 2 + 250, score_normal_button_image, score_hover_button_image) 
+back_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 150, back_normal_button_image, back_hover_button_image)
+high_volume_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, high_volume_button_image, high_volume_button_image)
+low_volume_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, low_volume_button_image, low_volume_button_image)
 
 # Crear grupo de sprites y agregar el jugador al grupo
 miaus = pygame.sprite.Group()
@@ -986,6 +983,45 @@ mute_key = pygame.K_m
 is_muted = False
 volume_up_key = pygame.K_l
 volume_down_key = pygame.K_k
+
+def pressed_scores_button():
+    while game_paused:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                sys.exit()
+        screen.blit(background_spider_web, (0, 0))
+        if back_button.draw(screen):
+            if_paused()
+        pygame.display.update()
+
+def if_paused():
+    global pausa_timer
+    global game_paused
+    pausa_timer = True
+    game_paused = True
+    while game_paused:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                sys.exit()
+        pygame.mixer.music.pause()
+        screen.blit(background_normal_image, (0, 0))
+        font = pygame.font.Font(None, 75)
+        pause_text = font.render("Paused", True, RED)
+        pause_text_rect = pause_text.get_rect()
+        pause_text_rect.center = (WIDTH / 2, HEIGHT / 2)
+        screen.blit(pause_text, pause_text_rect)
+        if resume_button.draw(screen):
+            game_paused = False
+            pygame.mixer.music.unpause()
+        if score_button.draw(screen):
+            pressed_scores_button()
+        if exit_button.draw(screen):
+            quit()
+        pygame.display.update()
 
 def input_name():
     global player_name
@@ -1010,6 +1046,7 @@ def input_name():
                     input_text += event.unicode.upper()
         screen.fill((0, 0, 0))
         if play_button.draw(screen):
+            load_score()
             print("Restart button pressed")
             pygame.mixer.music.play(-1)
             empty_groups()
@@ -1039,12 +1076,31 @@ def input_name():
         clock.tick(FPS)
 
     player_name = input_text
-    return player_name
+    return player_name, best_score_number
 
 # Bucle principal del juego
 running = True
 while running:
     game_over = player.update(game_over)
+
+    if game_paused == True:
+        if menu_state == "main":
+            if resume_button.draw(screen):
+                pass
+            if options_button.draw(screen):
+                menu_state = "options"
+            if exit_button.draw(screen):
+                running = False
+        if menu_state == "options":
+            if score_button.draw(screen):
+                pass
+            if low_volume_button.draw(screen):
+                pass
+            if high_volume_button.draw(screen):
+                pass
+            if back_button.draw(screen):
+                menu_state = "main"
+
     # Manejo de eventos
     for event in pygame.event.get():
         # # handle text input
@@ -1062,10 +1118,9 @@ while running:
                 player.can_shoot = False
 
             if event.key == pygame.K_p:
+                if_paused()
                 if playing_music:
                     pygame.mixer.music.pause()
-                show_paused_text(screen, "PAUSED", game_over_font, (WIDTH / 2, HEIGHT / 2), RED)
-                wait_user()
                 if playing_music:
                     pygame.mixer.music.unpause()
 
@@ -1110,7 +1165,12 @@ while running:
 
     elapsed_time += clock.tick(FPS)
 
-    if main_menu == True:
+    if pause_button.draw(screen):
+        game_paused = True
+        print("pauseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+        if_paused()
+
+    if start_game == False:
         # Verificar si el cursor está sobre el botón play_button
         if play_button.rect.collidepoint(pygame.mouse.get_pos()):
             # Cambiar la imagen del fondo cuando el cursor está sobre play_button
@@ -1130,7 +1190,7 @@ while running:
             print("Play button pressed")
             wolves_intro.stop()
             pygame.mixer.music.play(-1)
-            main_menu = False
+            start_game = True
 
         if exit_button.draw(screen):
             print("Exit button pressed")
@@ -1170,6 +1230,7 @@ while running:
         world.draw()
         # play_button.draw(screen)
         # exit_button.draw(screen)
+        pause_button.draw(screen)
         key_group.draw(screen)
         platform_group.draw(screen)
         spell_book_group.draw(screen)
@@ -1188,20 +1249,22 @@ while running:
                     # Dibujar información en la pantalla (Score, Lives, Keys)
         font = pygame.font.Font(None, 36)  # Puedes ajustar el tamaño de la fuente según tus preferencias
 
-        spell_book_score = font.render("Spell Book: {0}".format(player.spell_book), True, GOLD)
-        screen.blit(spell_book_score, (350, 10))
+        spell_book_score = font.render("Book: {0}".format(player.spell_book), True, GOLD)
+        screen.blit(spell_book_score, (300, 10))
 
         # Renderizar texto para Score
+        if player.score_number < 0:
+            player.score_number = 0
         score_text = font.render("Score: {0}".format(player.score_number), True, GOLD)
-        screen.blit(score_text, (80, 10))
+        screen.blit(score_text, (30, 10))
 
         # Renderizar texto para Lives
         lives_text = font.render("Lives: {0}".format(int(player.lives)), True, GOLD)
-        screen.blit(lives_text, (220, 10))
+        screen.blit(lives_text, (170, 10))
 
         # Renderizar texto para Keys
         keys_text = font.render("Keys: {0}".format(player.key_score), True, GOLD)
-        screen.blit(keys_text, (550, 10))
+        screen.blit(keys_text, (430, 10))
 
         # Renderizar texto para Timer
         seconds = elapsed_time // 1000
@@ -1209,11 +1272,11 @@ while running:
             minute += 1
             elapsed_time = 0
         timer_text = font.render("Time: {0:02d}:{1:02d}".format(minute, seconds), True, GOLD)
-        screen.blit(timer_text, (675, 10))
+        screen.blit(timer_text, (550, 10))
 
         # Renderizar texto para Keys
-        best_score_text = font.render("Best score:{0} {1}".format(player_name, best_score_number), True, ORANGE)
-        screen.blit(best_score_text, (830, 10))
+        best_score_text = font.render("BS: {0} {1}".format(player_name, best_score_number), True, ORANGE)
+        screen.blit(best_score_text, (720, 10))
         print("mejor numero {0}".format(best_score_number))
 
         if game_over == -1:
@@ -1248,10 +1311,10 @@ while running:
             pygame.mixer.music.stop()
             if player.score_number > previous_score_number:
                 best_score_number = player.score_number
-                input_name()
+                # input_name()
                 save_score(player_name, best_score_number)
             
-            if play_button.draw(screen):
+            if restart_button.draw(screen):
                 elapsed_time = 0
                 minute = 0
                 print("Restart button pressed")
@@ -1317,7 +1380,7 @@ while running:
                 final_score = best_score_number
                 print("final_score {0}".format(final_score))
                 show_paused_text(screen, "", game_over_font, (WIDTH / 2, HEIGHT / 2), RED)
-                wait_user()
+                if_paused()
 
         # screen.blit(player.image, player.rect)
 

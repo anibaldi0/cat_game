@@ -24,7 +24,7 @@ BACKGROUND_NORMAL_IMAGE = "images/house_idle.jpg"
 BACKGROUND_EXIT_IMAGE = "images/house_exit.jpg"
 BACKGROUND_PLAY_IMAGE = "images/house_play.jpg"
 
-BACKGROUND_SPIDER_WEB = "images/spider_web_01.jpg"
+BACKGROUND_SPIDER_WEB = "images/spider_web_02.png"
 
 ICE_LAVA_FLOOR = "images/ice_lava_floor.png"
 
@@ -54,14 +54,28 @@ LAVA_FLOOR = "images/piso01.png"
 
 BOOK_ITEM_IMAGE = "images/spellbook.png"
 
-PLAY_NORMAL_BUTTON_IMAGE = "images/play_button_normal.png"
-PLAY_HOVER_BUTTON_IMAGE = "images/play_button_hover.png"
-
 EXIT_NORMAL_BUTTON_IMAGE = "images/exit_button_normal.png"
 EXIT_HOVER_BUTTON_IMAGE = "images/exit_button_hover.png"
 
-START_HOVER_BUTTON_IMAGE = "images/start_button_hover.png"
-START_NORMAL_BUTTON_IMAGE = "images/start_button_normal.png"
+RESTART_HOVER_BUTTON_IMAGE = "images/restart_button_hover.png"
+RESTART_NORMAL_BUTTON_IMAGE = "images/restart_button_normal.png"
+BACK_NORMAL_BUTTON_IMAGE = "images/back_button_normal.png"
+BACK_HOVER_BUTTON_IMAGE = "images/back_button_hover.png"
+PAUSE_NORMAL_BUTTON_IMAGE = "images/play_pause_normal_01.png"
+PAUSE_HOVER_BUTTON_IMAGE = "images/play_pause_hover_01.png"
+PLAY_HOVER_BUTTON_IMAGE = 'images/play_button_hover.png'
+PLAY_NORMAL_BUTTON_IMAGE = 'images/play_button_normal.png'
+HIGH_VOLUME_BUTTON_IMAGE = "images/high_volume.png"
+LOW_VOLUME_BUTTON_IMAGE = "images/low_volume.png"
+EXIT_HOVER_BUTTON_IMAGE = "images/exit_button_hover.png"
+EXIT_NORMAL_BUTTON_IMAGE = "images/exit_button_normal.png"
+RESUME_NORMAL_BUTTON_IMAGE = "images/resume_button_normal.png"
+RESUME_HOVER_BUTTON_IMAGE = "images/resume_button_hover.png"
+OPTIONS_HOVER_BUTTON_IMAGE = "images/options_button_hover.png"
+OPTIONS_NORMAL_BUTTON_IMAGE = "images/options_button_normal.png"
+SCORE_HOVER_BUTTON_IMAGE = "images/scores_button_hover.png"
+SCORE_NORMAL_BUTTON_IMAGE = "images/scores_button_normal.png"
+
 
 TREE_IMAGES_LIST = ["images/tree_left_01.png",
                     "images/tree_left_02.png",
