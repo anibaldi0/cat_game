@@ -29,7 +29,7 @@ player_name, best_score_number = load_score()
 # define variables
 tile_size = 60
 game_over = 0
-level = 2
+level = 3
 max_level = 3
 start_game = False
 menu_state = "main"
@@ -984,7 +984,51 @@ is_muted = False
 volume_up_key = pygame.K_l
 volume_down_key = pygame.K_k
 
+def easter_egg():
+    player.spell_book = 0
+    global game_paused
+    game_paused = True
+    while game_paused:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                sys.exit()
+        pygame.mixer.music.pause()
+        screen.blit(background_spider_web, (0, 0))
+        font_easter_egg = pygame.font.Font(None, 75)
+        easter_egg_text = font_easter_egg.render("Easter Egg'Credits:", True, WHITE)
+        easter_egg_text_rect = easter_egg_text.get_rect()
+        easter_egg_text_rect.center = (WIDTH / 2, 150)
+        # show_paused_text(screen, "Developer:   Anibal Caeiro", True,  (WIDTH / 2, 225), WHITE)
+        # show_paused_text(screen, "Docentes:   Christian Baus", True,  (WIDTH / 2, 300), WHITE)
+        # show_paused_text(screen, "Developer:   German Scarafilo", True,  (WIDTH / 2, 375), WHITE)
+        # show_paused_text(screen, "Developer:   Marina Cardozo", True,  (WIDTH / 2, 450), WHITE)
+        font_credits = pygame.font.Font(None, 45)
+        developer_text = font_credits.render("Developer:   Anibal Caeiro", True, WHITE)
+        developer_text_rect = developer_text.get_rect()
+        developer_text_rect.center = (WIDTH / 2, 225)
+        baus_text = font_credits.render("Docentes:   Christian Baus", True, WHITE)
+        baus_text_rect = baus_text.get_rect()
+        baus_text_rect.center = (WIDTH / 2, 300)
+        german_text = font_credits.render("German Scarafilo", True, WHITE)
+        german_text_rect = german_text.get_rect()
+        german_text_rect.center = (WIDTH / 2 + 75, 375)
+        marina_text = font_credits.render("Marina Cardozo", True, WHITE)
+        marina_text_rect = marina_text.get_rect()
+        marina_text_rect.center = (WIDTH / 2 + 75, 450)
+        screen.blit(baus_text, baus_text_rect)
+        screen.blit(german_text, german_text_rect)
+        screen.blit(marina_text, marina_text_rect)
+        screen.blit(developer_text, developer_text_rect)
+        screen.blit(easter_egg_text, easter_egg_text_rect)
+        if back_button.draw(screen):
+            if_paused()
+        pygame.display.update()
+
 def pressed_scores_button():
+    global game_paused
+    game_paused = True
     while game_paused:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -993,13 +1037,12 @@ def pressed_scores_button():
                 sys.exit()
         screen.blit(background_spider_web, (0, 0))
         if back_button.draw(screen):
+            game_paused = False
             if_paused()
         pygame.display.update()
 
 def if_paused():
-    global pausa_timer
     global game_paused
-    pausa_timer = True
     game_paused = True
     while game_paused:
         for event in pygame.event.get():
@@ -1167,7 +1210,6 @@ while running:
 
     if pause_button.draw(screen):
         game_paused = True
-        print("pauseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
         if_paused()
 
     if start_game == False:
@@ -1196,6 +1238,8 @@ while running:
             print("Exit button pressed")
             running = False
     else:
+        if level == 3 and player.lives == 1 and player.spell_book == 1:
+            easter_egg()
         # best_score_number = previous_score_number
         print("best {0} y score {1}".format(best_score_number, player.score_number))
         if player.score_number >= best_score_number:
