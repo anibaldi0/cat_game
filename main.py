@@ -31,7 +31,7 @@ player_name, best_score_number = load_score()
 # define variables
 tile_size = 60
 game_over = 0
-level = 1
+level = 3
 max_level = 3
 start_game = False
 menu_state = "main"
@@ -44,7 +44,7 @@ pausa_timer = False
 player_input = ""
 top_scores = []
 name_entered = False
-file_path = "I:\\workspace_ani\\UTN_Programacion_2023\\Program_1_2023_recursado_segundo_cuatri\\Profesor_Chris_Baus\\Programacion_1\\cat_game\\scores.json"
+file_path = "scores.json"
 
 miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 miau_left_image = pygame.transform.flip(miau_right_image, True, False)
@@ -791,7 +791,7 @@ class Tree(pygame.sprite.Sprite):
         self.image = tree_left_images[0]
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y
+        self.rect.y = y + 10
         self.speed = TREE_SPEED
         self.move_couter = 0
         self.direction = 0
@@ -1068,9 +1068,12 @@ def easter_egg():
         pygame.mixer.music.pause()
         screen.blit(background_spider_web, (0, 0))
         font_easter_egg = pygame.font.Font(None, 75)
-        easter_egg_text = font_easter_egg.render("Credits:", True, WHITE)
+        easter_egg_text = font_easter_egg.render("EASTER EGG", True, WHITE)
         easter_egg_text_rect = easter_egg_text.get_rect()
-        easter_egg_text_rect.center = (WIDTH / 2, 150)
+        easter_egg_text_rect.center = (WIDTH / 2, 90)
+        credits_text = font_easter_egg.render("Credits:", True, WHITE)
+        credits_text_rect = credits_text.get_rect()
+        credits_text_rect.center = (WIDTH / 2, 165)
         # show_paused_text(screen, "Developer:   Anibal Caeiro", True,  (WIDTH / 2, 225), WHITE)
         # show_paused_text(screen, "Docentes:   Christian Baus", True,  (WIDTH / 2, 300), WHITE)
         # show_paused_text(screen, "German Scarafilo", True,  (WIDTH / 2, 375), WHITE)
@@ -1093,6 +1096,7 @@ def easter_egg():
         screen.blit(marina_text, marina_text_rect)
         screen.blit(developer_text, developer_text_rect)
         screen.blit(easter_egg_text, easter_egg_text_rect)
+        screen.blit(credits_text, credits_text_rect)
         if back_button.draw(screen):
             return
         pygame.display.update()
@@ -1217,7 +1221,7 @@ while running:
             running = False
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP and not player.can_shoot:
+            if event.key == pygame.K_l and not player.can_shoot:
                 player.shoot(player.direction)
                 player.can_shoot = True
             else:
