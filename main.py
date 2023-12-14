@@ -1020,7 +1020,7 @@ def choose_level():
         pygame.display.flip()
         clock.tick(FPS)
 
-    return selected_level + 1  # Devuelve el nivel seleccionado (puedes ajustar según tu lógica)
+    return selected_level + 1# Devuelve el nivel seleccionado (puedes ajustar según tu lógica)
 
 
 def darw_player_input(text, font, text_color, x, y):
@@ -1145,6 +1145,7 @@ def easter_egg():
         pygame.display.update()
 
 def if_paused():
+    global best_score_number
     global game_over
     clock = pygame.time.Clock()
     run = True
@@ -1169,6 +1170,9 @@ def if_paused():
         if choose_level_button.draw(screen):
             selected_level = choose_level()
             if selected_level is not None:
+                empty_groups()
+                if player.score_number > previous_score_number:
+                    best_score_number = player.score_number
                 # Cargar el nivel seleccionado
                 level = selected_level
                 with open("level{0}_data.csv".format(level), newline="") as csvfile:
@@ -1176,10 +1180,10 @@ def if_paused():
                     for x, row in enumerate(reader):
                         for y, tile in enumerate(row):
                             world_data[x][y] = int(tile)
-                empty_groups()
                 world.restart(world_data)
                 player.restart(x=10, y=200)
                 game_over = 0
+                
 
 
         if score_button.draw(screen):
