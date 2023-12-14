@@ -1,6 +1,8 @@
 import pygame
 import sys
+import os
 import csv
+import json
 
 from constants import *
 import random
@@ -29,14 +31,20 @@ player_name, best_score_number = load_score()
 # define variables
 tile_size = 60
 game_over = 0
-level = 3
+level = 1
 max_level = 3
 start_game = False
 menu_state = "main"
+init_score = 0
 previous_score_number = best_score_number
+best_score_ever = 0
 game_paused = False
 running = True
 pausa_timer = False
+player_input = ""
+top_scores = []
+name_entered = False
+file_path = "I:\\workspace_ani\\UTN_Programacion_2023\\Program_1_2023_recursado_segundo_cuatri\\Profesor_Chris_Baus\\Programacion_1\\cat_game\\scores.json"
 
 miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 miau_left_image = pygame.transform.flip(miau_right_image, True, False)
@@ -70,9 +78,9 @@ lava_floor_images = [pygame.transform.scale(pygame.image.load(image).convert_alp
 
 ice_lava_floor_image = pygame.transform.scale(pygame.image.load(ICE_LAVA_FLOOR).convert_alpha(), (WIDTH / 18, HEIGHT / 12))
 
-tree_right_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 12, HEIGHT / 8)) for image in TREE_IMAGES_LIST]
+tree_right_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 14, HEIGHT / 10)) for image in TREE_IMAGES_LIST]
 tree_left_images = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(image).convert_alpha(), 
-                        (WIDTH // 12, HEIGHT // 8)), True, False) for image in TREE_IMAGES_LIST]
+                        (WIDTH / 14, HEIGHT / 10)), True, False) for image in TREE_IMAGES_LIST]
 
 pumpkin_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 20, HEIGHT / 16)) for image in PUMPKIN_IMAGES_LIST]
 
@@ -971,6 +979,7 @@ playing_music = True
 text = ""
 font_size = 60
 font = pygame.font.Font(None, font_size)
+
 def darw_player_input(text, font, text_color, x, y):
     img = font.render(text, True, text_color)
     width = img.get_width()
@@ -983,6 +992,68 @@ mute_key = pygame.K_m
 is_muted = False
 volume_up_key = pygame.K_l
 volume_down_key = pygame.K_k
+
+def load_scores():
+    global top_scores
+    with open(file_path, "r", encoding="utf-8") as file:
+        top_scores = json.load(file)
+    return top_scores
+
+def save_scores():
+    with open(file_path, "w") as file:
+        json.dump(top_scores, file)
+
+def save_player_score(player_name, score):
+    # Cargar datos existentes si hay alguno
+    try:
+        with open(file_path, 'r') as file:
+            scores = json.load(file)
+    except FileNotFoundError:
+        scores = {}
+
+    # Actualizar o agregar el puntaje del jugador
+    scores[player_name] = score
+
+    # Guardar los datos en el archivo
+    with open(file_path, 'w') as file:
+        json.dump(scores, file)
+
+def show_top_scores():
+    font = pygame.font.Font(None, 36)
+    clock = pygame.time.Clock()
+
+    # Cargar los puntajes
+    load_scores()
+
+    run = True
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+        screen.blit(background_spider_web, (0, 0))
+        text = font.render("Best Players", True, WHITE)
+        screen.blit(text, (WIDTH // 2 - 100, 50))
+
+        # Ordenar los puntajes de mayor a menor
+        sorted_scores = sorted(top_scores.items(), key=lambda x: x[1], reverse=True)
+
+        # Mostrar los 5 mejores puntajes
+        for index, (player_name, score) in enumerate(sorted_scores[:5]):
+            player_text = "{0}. {1} - {2}".format(index + 1, player_name, score)
+            text = font.render(player_text, True, WHITE)
+            screen.blit(text, (WIDTH // 2 - 100, 100 + index * 50))
+
+        if back_button.draw(screen):
+            pygame.mixer.music.play()
+            # run = False
+            # if_paused()
+            return
+
+        pygame.display.flip()
+        clock.tick(FPS)
+    return max(top_scores.values(), default=0)
 
 def easter_egg():
     player.spell_book = 0
@@ -997,18 +1068,18 @@ def easter_egg():
         pygame.mixer.music.pause()
         screen.blit(background_spider_web, (0, 0))
         font_easter_egg = pygame.font.Font(None, 75)
-        easter_egg_text = font_easter_egg.render("Easter Egg'Credits:", True, WHITE)
+        easter_egg_text = font_easter_egg.render("Credits:", True, WHITE)
         easter_egg_text_rect = easter_egg_text.get_rect()
         easter_egg_text_rect.center = (WIDTH / 2, 150)
         # show_paused_text(screen, "Developer:   Anibal Caeiro", True,  (WIDTH / 2, 225), WHITE)
         # show_paused_text(screen, "Docentes:   Christian Baus", True,  (WIDTH / 2, 300), WHITE)
-        # show_paused_text(screen, "Developer:   German Scarafilo", True,  (WIDTH / 2, 375), WHITE)
-        # show_paused_text(screen, "Developer:   Marina Cardozo", True,  (WIDTH / 2, 450), WHITE)
+        # show_paused_text(screen, "German Scarafilo", True,  (WIDTH / 2, 375), WHITE)
+        # show_paused_text(screen, "Marina Cardozo", True,  (WIDTH / 2, 450), WHITE)
         font_credits = pygame.font.Font(None, 45)
         developer_text = font_credits.render("Developer:   Anibal Caeiro", True, WHITE)
         developer_text_rect = developer_text.get_rect()
         developer_text_rect.center = (WIDTH / 2, 225)
-        baus_text = font_credits.render("Docentes:   Christian Baus", True, WHITE)
+        baus_text = font_credits.render("Professors:   Christian Baus", True, WHITE)
         baus_text_rect = baus_text.get_rect()
         baus_text_rect.center = (WIDTH / 2, 300)
         german_text = font_credits.render("German Scarafilo", True, WHITE)
@@ -1023,25 +1094,41 @@ def easter_egg():
         screen.blit(developer_text, developer_text_rect)
         screen.blit(easter_egg_text, easter_egg_text_rect)
         if back_button.draw(screen):
-            if_paused()
+            return
         pygame.display.update()
 
-def pressed_scores_button():
-    global game_paused
-    game_paused = True
-    while game_paused:
+def if_paused():
+    clock = pygame.time.Clock()
+    run = True
+    while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-                sys.exit()
-        screen.blit(background_spider_web, (0, 0))
-        if back_button.draw(screen):
-            game_paused = False
-            if_paused()
-        pygame.display.update()
 
-def if_paused():
+        pygame.mixer.music.pause()
+        screen.blit(background_normal_image, (0, 0))
+        font = pygame.font.Font(None, 75)
+        pause_text = font.render("Paused", True, RED)
+        pause_text_rect = pause_text.get_rect()
+        pause_text_rect.center = (WIDTH / 2, HEIGHT / 2)
+        screen.blit(pause_text, pause_text_rect)
+
+        if resume_button.draw(screen):
+            run = False
+            pygame.mixer.music.unpause()
+
+        if score_button.draw(screen):
+            best_score_ever = show_top_scores()
+            return best_score_ever
+
+        if exit_button.draw(screen):
+            quit()
+
+        pygame.display.update()
+        clock.tick(FPS)
+
+def wait_a_moment():
     global game_paused
     game_paused = True
     while game_paused:
@@ -1051,62 +1138,38 @@ def if_paused():
                 quit()
                 sys.exit()
         pygame.mixer.music.pause()
-        screen.blit(background_normal_image, (0, 0))
-        font = pygame.font.Font(None, 75)
-        pause_text = font.render("Paused", True, RED)
-        pause_text_rect = pause_text.get_rect()
-        pause_text_rect.center = (WIDTH / 2, HEIGHT / 2)
-        screen.blit(pause_text, pause_text_rect)
-        if resume_button.draw(screen):
-            game_paused = False
-            pygame.mixer.music.unpause()
-        if score_button.draw(screen):
-            pressed_scores_button()
-        if exit_button.draw(screen):
-            quit()
         pygame.display.update()
+        clock.tick(FPS)
 
 def input_name():
+    global name_entered
     global player_name
-    global game_over
-    global best_score_number
-    input_active = True
+    cursor_blink = 1
     font = pygame.font.Font(None, 36)
     input_text = ""
-    cursor_blink = 0
+    clock = pygame.time.Clock()
+    run = True
 
-    while input_active:
+    while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN and len(input_text) == 3:
-                    input_active = False
+                if event.key == pygame.K_RETURN:
+                    player_name = input_text.upper()
+                    name_entered = True
+                    run = False
+
                 elif event.key == pygame.K_BACKSPACE:
                     input_text = input_text[:-1]
+
                 elif event.unicode.isalpha() and len(input_text) < 3:
-                    input_text += event.unicode.upper()
+                    input_text += event.unicode
+
         screen.fill((0, 0, 0))
-        if play_button.draw(screen):
-            load_score()
-            print("Restart button pressed")
-            pygame.mixer.music.play(-1)
-            empty_groups()
-            level = 1  # Reiniciar al nivel 1
-            with open("level{0}_data.csv".format(level), newline="") as csvfile:
-                reader = csv.reader(csvfile, delimiter=",")
-                for x, row in enumerate(reader):
-                    for y, tile in enumerate(row):
-                        world_data[x][y] = int(tile)
-            world.restart(world_data)
-            player.restart(x=10, y=200)
-            game_over = 0
-            input_active = False
-        if exit_button.draw(screen):
-            print("Exit button pressed")
-            input_active = False
-        text_surface = font.render("Name: {0}".format(input_text), True, WHITE)
+        text_surface = font.render("Player: {0}".format(input_text), True, WHITE)
         # Cursor intermitente
         cursor_blink = (cursor_blink + 1) % 30  # Controla la velocidad de parpadeo
         if cursor_blink < 15:
@@ -1118,31 +1181,31 @@ def input_name():
         pygame.display.flip()
         clock.tick(FPS)
 
-    player_name = input_text
-    return player_name, best_score_number
-
 # Bucle principal del juego
 running = True
 while running:
     game_over = player.update(game_over)
 
-    if game_paused == True:
-        if menu_state == "main":
-            if resume_button.draw(screen):
-                pass
-            if options_button.draw(screen):
-                menu_state = "options"
-            if exit_button.draw(screen):
-                running = False
-        if menu_state == "options":
-            if score_button.draw(screen):
-                pass
-            if low_volume_button.draw(screen):
-                pass
-            if high_volume_button.draw(screen):
-                pass
-            if back_button.draw(screen):
-                menu_state = "main"
+    if start_game == False and not name_entered:
+        input_name()
+
+    # if game_paused == True:
+    #     if menu_state == "main":
+    #         if resume_button.draw(screen):
+    #             pass
+    #         if options_button.draw(screen):
+    #             menu_state = "options"
+    #         if exit_button.draw(screen):
+    #             running = False
+    #     if menu_state == "options":
+    #         if score_button.draw(screen):
+    #             pass
+    #         if low_volume_button.draw(screen):
+    #             pass
+    #         if high_volume_button.draw(screen):
+    #             pass
+    #         if back_button.draw(screen):
+    #             menu_state = "main"
 
     # Manejo de eventos
     for event in pygame.event.get():
@@ -1210,7 +1273,7 @@ while running:
 
     if pause_button.draw(screen):
         game_paused = True
-        if_paused()
+        best_score_ever = if_paused()
 
     if start_game == False:
         # Verificar si el cursor está sobre el botón play_button
@@ -1319,9 +1382,13 @@ while running:
         screen.blit(timer_text, (550, 10))
 
         # Renderizar texto para Keys
-        best_score_text = font.render("BS: {0} {1}".format(player_name, best_score_number), True, ORANGE)
+        load_scores()
+        # best_score_ever = max(top_scores.values(), default=0)
+        best_player = max(top_scores, key=top_scores.get)
+        best_score_ever = top_scores[best_player]
+        best_score_text = font.render("BS: {0} {1}".format(best_player, best_score_ever), True, ORANGE)
         screen.blit(best_score_text, (720, 10))
-        print("mejor numero {0}".format(best_score_number))
+        print("mejor numero {0}".format(best_score_ever))
 
         if game_over == -1:
             if player.key_score >= 1:
@@ -1347,7 +1414,6 @@ while running:
             game_over_text_rect = game_over_text.get_rect()
             game_over_text_rect.center = (WIDTH / 2, HEIGHT / 2)
             screen.blit(game_over_text, game_over_text_rect)
-
             print_player_score = game_over_font.render("Score {0}".format(player.score_number), True, YELLOW)
             print_player_score_rect = print_player_score.get_rect()
             print_player_score_rect.center = (WIDTH / 2, HEIGHT / 3)
@@ -1355,9 +1421,7 @@ while running:
             pygame.mixer.music.stop()
             if player.score_number > previous_score_number:
                 best_score_number = player.score_number
-                # input_name()
-                save_score(player_name, best_score_number)
-            
+                save_player_score(player_name, player.score_number)
             if restart_button.draw(screen):
                 elapsed_time = 0
                 minute = 0
@@ -1377,18 +1441,15 @@ while running:
             if exit_button.draw(screen):
                 print("Exit button pressed")
                 running = False
-
-                # show_paused_text(screen, "", game_over_font, (WIDTH / 2, HEIGHT / 2), RED)
-                # wait_user()
                 
         if game_over == 1:
-            player_name, best_score_number = load_score()
             print("cruza puerta")
             print("lives {0} y score {1}".format(player.lives, player.score_number))
             previous_lives = player.lives
             previous_score_number = player.score_number
             if player.score_number > previous_score_number:
-                best_score_number = player.score_number
+                best_score_ever = player.score_number
+                save_player_score(player_name, player.score_number)
             print("previous lives {0} y previous score {1}".format(previous_lives, previous_score_number))
             level += 1
             empty_groups()
@@ -1407,14 +1468,14 @@ while running:
                 print("paso por level <= max_level")
                 # print("best score {0}, score {1}, previous {2}".format(best_score_number, player.score_number, previous_score_number))
             else:
+                win_game.play()
                 previous_lives = player.lives
+                save_player_score(player_name, player.score_number)
                 if player.score_number > previous_score_number:
                     best_score_number = player.score_number
-                    save_score()
                 print("best score {0}, score {1}, previous {2}".format(best_score_number, player.score_number, previous_score_number))
                 screen.fill(BLACK)
                 door_open_sound.stop()
-                pygame.mixer.music.stop()
                 game_over_text = game_over_font.render("You Win", True, WHITE)
                 game_over_text_rect = game_over_text.get_rect()
                 game_over_text_rect.center = (WIDTH / 2, HEIGHT / 2)
@@ -1423,8 +1484,27 @@ while running:
                 print("paso por level > max_level")
                 final_score = best_score_number
                 print("final_score {0}".format(final_score))
-                show_paused_text(screen, "", game_over_font, (WIDTH / 2, HEIGHT / 2), RED)
-                if_paused()
+                if restart_button.draw(screen):
+                    elapsed_time = 0
+                    minute = 0
+                    print("Restart button pressed")
+                    pygame.mixer.music.play(-1)
+                    empty_groups()
+                    if player.score_number > previous_score_number:
+                        best_score_number = player.score_number
+                    level = 1  # Reiniciar al nivel 1
+                    with open("level{0}_data.csv".format(level), newline="") as csvfile:
+                        reader = csv.reader(csvfile, delimiter=",")
+                        for x, row in enumerate(reader):
+                            for y, tile in enumerate(row):
+                                world_data[x][y] = int(tile)
+                    world.restart(world_data)
+                    player.restart(x=10, y=200)
+                    game_over = 0
+                if exit_button.draw(screen):
+                    print("Exit button pressed")
+                    running = False
+
 
         # screen.blit(player.image, player.rect)
 

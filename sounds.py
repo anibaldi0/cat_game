@@ -29,7 +29,7 @@ INITIAL_VOLUME = 0.5
 current_volume = INITIAL_VOLUME
 
 win_game = pygame.mixer.Sound(WIN_GAME)
-win_game.set_volume(INITIAL_VOLUME - 0.5)
+win_game.set_volume(INITIAL_VOLUME - 0.2)
 
 game_over_fx = pygame.mixer.Sound(GAME_OVER_FX)
 game_over_fx.set_volume(INITIAL_VOLUME)
