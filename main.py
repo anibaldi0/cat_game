@@ -118,8 +118,8 @@ exit_hover_button_image = pygame.transform.scale(pygame.image.load(EXIT_HOVER_BU
 pause_button_image = pygame.transform.scale(pygame.image.load(PAUSE_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 22, HEIGHT / 28))
 pause_hover_button_image = pygame.transform.scale(pygame.image.load(PAUSE_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 22, HEIGHT / 28))
 
-options_hover_button_image = pygame.transform.scale(pygame.image.load(OPTIONS_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
-options_normal_button_image = pygame.transform.scale(pygame.image.load(OPTIONS_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+choose_level_hover_button_image = pygame.transform.scale(pygame.image.load(OPTIONS_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+choose_level_normal_button_image = pygame.transform.scale(pygame.image.load(OPTIONS_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
 
 resume_hover_button_image = pygame.transform.scale(pygame.image.load(RESUME_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
 resume_normal_button_image = pygame.transform.scale(pygame.image.load(RESUME_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
@@ -964,12 +964,13 @@ restart_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 250, restart_normal_button
 play_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 250, play_normal_button_image, play_hover_button_image)
 exit_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, exit_normal_button_image, exit_hover_button_image)
 pause_button = Button(1000, 10, pause_button_image, pause_hover_button_image)
-resume_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 250, resume_normal_button_image, resume_hover_button_image)
-options_button = Button(100, 100, options_normal_button_image, options_hover_button_image)
-score_button = Button(WIDTH / 2 - 50, HEIGHT / 2 + 250, score_normal_button_image, score_hover_button_image) 
+resume_button = Button(WIDTH / 2 - 400, HEIGHT / 2 + 250, resume_normal_button_image, resume_hover_button_image)
+# options_button = Button(100, 100, options_normal_button_image, options_hover_button_image)
+score_button = Button(WIDTH / 2 - 200, HEIGHT / 2 + 250, score_normal_button_image, score_hover_button_image) 
 back_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 150, back_normal_button_image, back_hover_button_image)
 high_volume_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, high_volume_button_image, high_volume_button_image)
 low_volume_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, low_volume_button_image, low_volume_button_image)
+choose_level_button = Button(WIDTH / 2 + 20, HEIGHT / 2 + 250, choose_level_normal_button_image, choose_level_hover_button_image) 
 
 # Crear grupo de sprites y agregar el jugador al grupo
 miaus = pygame.sprite.Group()
@@ -979,6 +980,48 @@ playing_music = True
 text = ""
 font_size = 60
 font = pygame.font.Font(None, font_size)
+
+def choose_level():
+    font = pygame.font.Font(None, 36)
+    clock = pygame.time.Clock()
+    levels = ["Level 1", "Level 2", "Level 3"]  # Agrega aquí los niveles disponibles
+
+    selected_level = 0
+    run = True
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    selected_level = (selected_level - 1) % len(levels)
+                elif event.key == pygame.K_DOWN:
+                    selected_level = (selected_level + 1) % len(levels)
+                elif event.key == pygame.K_RETURN:
+                    run = False
+
+        screen.blit(background_spider_web, (0, 0))
+        text = font.render("Choose Level", True, WHITE)
+        screen.blit(text, (WIDTH // 2 - 100, 50))
+
+        for index, level_name in enumerate(levels):
+            level_text = font.render(level_name, True, WHITE)
+            screen.blit(level_text, (WIDTH // 2 - 50, 100 + index * 50))
+
+        pygame.draw.rect(screen, RED, (WIDTH // 2 - 60, 90 + selected_level * 50, 120, 36), 2)
+
+
+
+        if back_button.draw(screen):
+            return None  # Si se presiona "Volver", regresa a la pausa sin seleccionar un nivel
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+    return selected_level + 1  # Devuelve el nivel seleccionado (puedes ajustar según tu lógica)
+
 
 def darw_player_input(text, font, text_color, x, y):
     img = font.render(text, True, text_color)
@@ -1102,6 +1145,7 @@ def easter_egg():
         pygame.display.update()
 
 def if_paused():
+    global game_over
     clock = pygame.time.Clock()
     run = True
     while run:
@@ -1121,6 +1165,22 @@ def if_paused():
         if resume_button.draw(screen):
             run = False
             pygame.mixer.music.unpause()
+
+        if choose_level_button.draw(screen):
+            selected_level = choose_level()
+            if selected_level is not None:
+                # Cargar el nivel seleccionado
+                level = selected_level
+                with open("level{0}_data.csv".format(level), newline="") as csvfile:
+                    reader = csv.reader(csvfile, delimiter=",")
+                    for x, row in enumerate(reader):
+                        for y, tile in enumerate(row):
+                            world_data[x][y] = int(tile)
+                empty_groups()
+                world.restart(world_data)
+                player.restart(x=10, y=200)
+                game_over = 0
+
 
         if score_button.draw(screen):
             best_score_ever = show_top_scores()
