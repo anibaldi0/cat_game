@@ -31,7 +31,7 @@ player_name, best_score_number = load_score()
 # define variables
 tile_size = 60
 game_over = 0
-level = 1
+level = 3
 max_level = 3
 start_game = False
 menu_state = "main"
@@ -43,7 +43,7 @@ running = True
 pausa_timer = False
 player_input = ""
 top_scores = []
-name_entered = False
+name_entered = False 
 file_path = "I:\\workspace_ani\\UTN_Programacion_2023\\Program_1_2023_recursado_segundo_cuatri\\Profesor_Chris_Baus\\Programacion_1\\cat_game\\scores.json"
 
 miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
@@ -132,6 +132,9 @@ back_normal_button_image = pygame.transform.scale(pygame.image.load(BACK_NORMAL_
 
 high_volume_button_image = pygame.transform.scale(pygame.image.load(HIGH_VOLUME_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
 low_volume_button_image = pygame.transform.scale(pygame.image.load(LOW_VOLUME_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+
+level_normal_button_image = pygame.transform.scale(pygame.image.load(LEVEL_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+level_hover_button_image = pygame.transform.scale(pygame.image.load(LEVEL_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
 
 rip_cat = pygame.transform.scale(pygame.image.load(RIP_CAT).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
 
@@ -960,16 +963,17 @@ key_group = pygame.sprite.Group()
 bat_group = pygame.sprite.Group()
 world = World(world_data)
 stars_group = pygame.sprite.Group()
-restart_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 250, restart_normal_button_image, restart_hover_button_image)
-play_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 250, play_normal_button_image, play_hover_button_image)
-exit_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, exit_normal_button_image, exit_hover_button_image)
+restart_button = Button(WIDTH / 2 - 350, HEIGHT / 2 + 250, restart_normal_button_image, restart_hover_button_image)
+play_button = Button(WIDTH / 2 - 350, HEIGHT / 2 + 250, play_normal_button_image, play_hover_button_image)
+exit_button = Button(WIDTH / 2 + 240, HEIGHT / 2 + 250, exit_normal_button_image, exit_hover_button_image)
 pause_button = Button(1000, 10, pause_button_image, pause_hover_button_image)
-resume_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 250, resume_normal_button_image, resume_hover_button_image)
+resume_button = Button(WIDTH / 2 - 350, HEIGHT / 2 + 250, resume_normal_button_image, resume_hover_button_image)
 options_button = Button(100, 100, options_normal_button_image, options_hover_button_image)
-score_button = Button(WIDTH / 2 - 50, HEIGHT / 2 + 250, score_normal_button_image, score_hover_button_image) 
+score_button = Button(WIDTH / 2 - 160, HEIGHT / 2 + 250, score_normal_button_image, score_hover_button_image) 
 back_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 150, back_normal_button_image, back_hover_button_image)
 high_volume_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, high_volume_button_image, high_volume_button_image)
 low_volume_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, low_volume_button_image, low_volume_button_image)
+level_button = Button(WIDTH / 2 + 50, HEIGHT / 2 + 250, level_normal_button_image, level_hover_button_image)
 
 # Crear grupo de sprites y agregar el jugador al grupo
 miaus = pygame.sprite.Group()
@@ -1049,7 +1053,7 @@ def show_top_scores():
             pygame.mixer.music.play()
             # run = False
             # if_paused()
-            return
+            return None
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -1064,40 +1068,20 @@ def easter_egg():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-                sys.exit()
         pygame.mixer.music.pause()
         screen.blit(background_spider_web, (0, 0))
-        font_easter_egg = pygame.font.Font(None, 75)
-        easter_egg_text = font_easter_egg.render("Credits:", True, WHITE)
-        easter_egg_text_rect = easter_egg_text.get_rect()
-        easter_egg_text_rect.center = (WIDTH / 2, 150)
-        # show_paused_text(screen, "Developer:   Anibal Caeiro", True,  (WIDTH / 2, 225), WHITE)
-        # show_paused_text(screen, "Docentes:   Christian Baus", True,  (WIDTH / 2, 300), WHITE)
-        # show_paused_text(screen, "German Scarafilo", True,  (WIDTH / 2, 375), WHITE)
-        # show_paused_text(screen, "Marina Cardozo", True,  (WIDTH / 2, 450), WHITE)
-        font_credits = pygame.font.Font(None, 45)
-        developer_text = font_credits.render("Developer:   Anibal Caeiro", True, WHITE)
-        developer_text_rect = developer_text.get_rect()
-        developer_text_rect.center = (WIDTH / 2, 225)
-        baus_text = font_credits.render("Professors:   Christian Baus", True, WHITE)
-        baus_text_rect = baus_text.get_rect()
-        baus_text_rect.center = (WIDTH / 2, 300)
-        german_text = font_credits.render("German Scarafilo", True, WHITE)
-        german_text_rect = german_text.get_rect()
-        german_text_rect.center = (WIDTH / 2 + 75, 375)
-        marina_text = font_credits.render("Marina Cardozo", True, WHITE)
-        marina_text_rect = marina_text.get_rect()
-        marina_text_rect.center = (WIDTH / 2 + 75, 450)
-        screen.blit(baus_text, baus_text_rect)
-        screen.blit(german_text, german_text_rect)
-        screen.blit(marina_text, marina_text_rect)
-        screen.blit(developer_text, developer_text_rect)
-        screen.blit(easter_egg_text, easter_egg_text_rect)
+        show_paused_text(screen, "Easter Egg", 75,  (WIDTH / 2, 100), GOLD)
+        show_paused_text(screen, "Credits:", 65,  (WIDTH / 2, 175), GOLD)
+        show_paused_text(screen, "Developer:   Anibal Caeiro", 45,  (WIDTH / 2, 275), WHITE)
+        show_paused_text(screen, "Professors:   Christian Baus", 45,  (WIDTH / 2, 375), WHITE)
+        show_paused_text(screen, "German Scarafilo", 45,  (WIDTH / 2 + 100, 450), WHITE)
+        show_paused_text(screen, "Marina Cardozo", 45,  (WIDTH / 2 + 100, 525), WHITE)
         if back_button.draw(screen):
             return
         pygame.display.update()
 
 def if_paused():
+    global game_over, level
     clock = pygame.time.Clock()
     run = True
     while run:
@@ -1188,24 +1172,6 @@ while running:
 
     if start_game == False and not name_entered:
         input_name()
-
-    # if game_paused == True:
-    #     if menu_state == "main":
-    #         if resume_button.draw(screen):
-    #             pass
-    #         if options_button.draw(screen):
-    #             menu_state = "options"
-    #         if exit_button.draw(screen):
-    #             running = False
-    #     if menu_state == "options":
-    #         if score_button.draw(screen):
-    #             pass
-    #         if low_volume_button.draw(screen):
-    #             pass
-    #         if high_volume_button.draw(screen):
-    #             pass
-    #         if back_button.draw(screen):
-    #             menu_state = "main"
 
     # Manejo de eventos
     for event in pygame.event.get():
@@ -1419,9 +1385,9 @@ while running:
             print_player_score_rect.center = (WIDTH / 2, HEIGHT / 3)
             screen.blit(print_player_score, print_player_score_rect)
             pygame.mixer.music.stop()
+            save_player_score(player_name, player.score_number)
             if player.score_number > previous_score_number:
                 best_score_number = player.score_number
-                save_player_score(player_name, player.score_number)
             if restart_button.draw(screen):
                 elapsed_time = 0
                 minute = 0

@@ -75,6 +75,8 @@ OPTIONS_HOVER_BUTTON_IMAGE = "images/options_button_hover.png"
 OPTIONS_NORMAL_BUTTON_IMAGE = "images/options_button_normal.png"
 SCORE_HOVER_BUTTON_IMAGE = "images/scores_button_hover.png"
 SCORE_NORMAL_BUTTON_IMAGE = "images/scores_button_normal.png"
+LEVEL_NORMAL_BUTTON_IMAGE = "images/level_button_normal.png"
+LEVEL_HOVER_BUTTON_IMAGE = "images/level_button_hover.png"
 
 
 TREE_IMAGES_LIST = ["images/tree_left_01.png",

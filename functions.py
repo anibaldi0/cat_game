@@ -34,7 +34,7 @@ def wait_user():
                     terminar()
                 return
             
-def show_paused_text(surface, texto, fuente, coordenadas, color_fuente):
+def show_paused_text(surface, texto, font_size=75, coordenadas=(0, 0), color_fuente=(255, 255, 255)):
     """
     Muestra un texto de pausa en la superficie especificada.
 
@@ -47,11 +47,13 @@ def show_paused_text(surface, texto, fuente, coordenadas, color_fuente):
 
     No devuelve nada. Simplemente muestra el texto en la superficie especificada.
     """
-    paused_text = fuente.render(texto, True, color_fuente)
+    # font_size = 75
+    font = pygame.font.Font(None, font_size)
+    paused_text = font.render(texto, True, color_fuente)
     rect_paused_text = paused_text.get_rect()
     rect_paused_text.center = coordenadas
     surface.blit(paused_text, rect_paused_text)
-    pygame.display.flip()
+    # pygame.display.flip()
 
 def save_score(player_name, best_score_number):
     """
