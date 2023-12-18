@@ -43,7 +43,7 @@ running = True
 pausa_timer = False
 player_input = ""
 top_scores = []
-name_entered = False 
+name_entered = False
 file_path = "I:\\workspace_ani\\UTN_Programacion_2023\\Program_1_2023_recursado_segundo_cuatri\\Profesor_Chris_Baus\\Programacion_1\\cat_game\\scores.json"
 
 miau_right_image = pygame.transform.scale(pygame.image.load(MIAU_SOUND_IMAGE).convert_alpha(), (WIDTH / 16, HEIGHT / 16))
@@ -118,8 +118,8 @@ exit_hover_button_image = pygame.transform.scale(pygame.image.load(EXIT_HOVER_BU
 pause_button_image = pygame.transform.scale(pygame.image.load(PAUSE_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 22, HEIGHT / 28))
 pause_hover_button_image = pygame.transform.scale(pygame.image.load(PAUSE_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 22, HEIGHT / 28))
 
-options_hover_button_image = pygame.transform.scale(pygame.image.load(OPTIONS_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
-options_normal_button_image = pygame.transform.scale(pygame.image.load(OPTIONS_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+choose_level_hover_button_image = pygame.transform.scale(pygame.image.load(OPTIONS_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
+choose_level_normal_button_image = pygame.transform.scale(pygame.image.load(OPTIONS_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
 
 resume_hover_button_image = pygame.transform.scale(pygame.image.load(RESUME_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
 resume_normal_button_image = pygame.transform.scale(pygame.image.load(RESUME_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 18))
@@ -794,7 +794,7 @@ class Tree(pygame.sprite.Sprite):
         self.image = tree_left_images[0]
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y
+        self.rect.y = y + 10
         self.speed = TREE_SPEED
         self.move_couter = 0
         self.direction = 0
@@ -967,13 +967,11 @@ restart_button = Button(WIDTH / 2 - 350, HEIGHT / 2 + 250, restart_normal_button
 play_button = Button(WIDTH / 2 - 350, HEIGHT / 2 + 250, play_normal_button_image, play_hover_button_image)
 exit_button = Button(WIDTH / 2 + 240, HEIGHT / 2 + 250, exit_normal_button_image, exit_hover_button_image)
 pause_button = Button(1000, 10, pause_button_image, pause_hover_button_image)
-resume_button = Button(WIDTH / 2 - 350, HEIGHT / 2 + 250, resume_normal_button_image, resume_hover_button_image)
-options_button = Button(100, 100, options_normal_button_image, options_hover_button_image)
-score_button = Button(WIDTH / 2 - 160, HEIGHT / 2 + 250, score_normal_button_image, score_hover_button_image) 
+resume_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 250, resume_normal_button_image, resume_hover_button_image)
+score_button = Button(WIDTH / 2 - 50, HEIGHT / 2 + 250, score_normal_button_image, score_hover_button_image) 
 back_button = Button(WIDTH / 2 - 360, HEIGHT / 2 + 150, back_normal_button_image, back_hover_button_image)
 high_volume_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, high_volume_button_image, high_volume_button_image)
 low_volume_button = Button(WIDTH / 2 + 250, HEIGHT / 2 + 250, low_volume_button_image, low_volume_button_image)
-level_button = Button(WIDTH / 2 + 50, HEIGHT / 2 + 250, level_normal_button_image, level_hover_button_image)
 
 # Crear grupo de sprites y agregar el jugador al grupo
 miaus = pygame.sprite.Group()
@@ -983,6 +981,7 @@ playing_music = True
 text = ""
 font_size = 60
 font = pygame.font.Font(None, font_size)
+
 
 def darw_player_input(text, font, text_color, x, y):
     img = font.render(text, True, text_color)
@@ -1077,11 +1076,11 @@ def easter_egg():
         show_paused_text(screen, "German Scarafilo", 45,  (WIDTH / 2 + 100, 450), WHITE)
         show_paused_text(screen, "Marina Cardozo", 45,  (WIDTH / 2 + 100, 525), WHITE)
         if back_button.draw(screen):
+            pygame.mixer.music.unpause()
             return
         pygame.display.update()
 
 def if_paused():
-    global game_over, level
     clock = pygame.time.Clock()
     run = True
     while run:
@@ -1183,7 +1182,7 @@ while running:
             running = False
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP and not player.can_shoot:
+            if event.key == pygame.K_l and not player.can_shoot:
                 player.shoot(player.direction)
                 player.can_shoot = True
             else:
