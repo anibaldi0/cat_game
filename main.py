@@ -1182,7 +1182,7 @@ while running:
             running = False
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_l and not player.can_shoot:
+            if event.key == pygame.K_UP and not player.can_shoot:
                 player.shoot(player.direction)
                 player.can_shoot = True
             else:
@@ -1268,17 +1268,11 @@ while running:
     else:
         if level == 3 and player.lives == 1 and player.spell_book == 1:
             easter_egg()
-        # best_score_number = previous_score_number
-        print("best {0} y score {1}".format(best_score_number, player.score_number))
         if player.score_number >= best_score_number:
             best_score_number = player.score_number
-            print("player score {0}".format(player.score_number))
-            print("Best score {0}".format(best_score_number))
         else:
             best_score_number = previous_score_number
-            print("second player score {0}".format(player.score_number))
-            print("second Best score {0}".format(best_score_number))
-        # save_score(player_name, best_score_number)
+
         # Actualizar
         platform_group.update()
         spell_book_group.update()
@@ -1318,7 +1312,7 @@ while running:
         stars_group.draw(screen)
         all_sprites.draw(screen)
 
-                    # Dibujar información en la pantalla (Score, Lives, Keys)
+        # Dibujar información en la pantalla (Score, Lives, Keys)
         font = pygame.font.Font(None, 36)  # Puedes ajustar el tamaño de la fuente según tus preferencias
 
         spell_book_score = font.render("Book: {0}".format(player.spell_book), True, GOLD)
@@ -1348,7 +1342,6 @@ while running:
 
         # Renderizar texto para Keys
         load_scores()
-        # best_score_ever = max(top_scores.values(), default=0)
         best_player = max(top_scores, key=top_scores.get)
         best_score_ever = top_scores[best_player]
         best_score_text = font.render("BS: {0} {1}".format(best_player, best_score_ever), True, ORANGE)
@@ -1430,15 +1423,12 @@ while running:
                 # player.score_number
                 player.score_number = previous_score_number
                 player.lives = previous_lives
-                print("paso por level <= max_level")
-                # print("best score {0}, score {1}, previous {2}".format(best_score_number, player.score_number, previous_score_number))
             else:
                 win_game.play()
                 previous_lives = player.lives
                 save_player_score(player_name, player.score_number)
                 if player.score_number > previous_score_number:
                     best_score_number = player.score_number
-                print("best score {0}, score {1}, previous {2}".format(best_score_number, player.score_number, previous_score_number))
                 screen.fill(BLACK)
                 door_open_sound.stop()
                 game_over_text = game_over_font.render("You Win", True, WHITE)
@@ -1446,13 +1436,10 @@ while running:
                 game_over_text_rect.center = (WIDTH / 2, HEIGHT / 2)
                 screen.blit(game_over_text, game_over_text_rect)
                 player.restart(x=-100, y=-100)
-                print("paso por level > max_level")
                 final_score = best_score_number
-                print("final_score {0}".format(final_score))
                 if restart_button.draw(screen):
                     elapsed_time = 0
                     minute = 0
-                    print("Restart button pressed")
                     pygame.mixer.music.play(-1)
                     empty_groups()
                     if player.score_number > previous_score_number:
