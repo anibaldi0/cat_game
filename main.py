@@ -31,10 +31,9 @@ player_name, best_score_number = load_score()
 # define variables
 tile_size = 60
 game_over = 0
-level = 3
+level = 1
 max_level = 3
 start_game = False
-menu_state = "main"
 init_score = 0
 previous_score_number = best_score_number
 best_score_ever = 0
@@ -1152,15 +1151,15 @@ def input_name():
                     input_text += event.unicode
 
         screen.fill((0, 0, 0))
-        text_surface = font.render("Player: {0}".format(input_text), True, WHITE)
+        text_surface = font.render("Ready Player One: {0}".format(input_text), True, WHITE)
         # Cursor intermitente
         cursor_blink = (cursor_blink + 1) % 30  # Controla la velocidad de parpadeo
         if cursor_blink < 15:
-            pygame.draw.line(screen, (255, 255, 255), (WIDTH // 2 - text_surface.get_width() // 2 + text_surface.get_width() + 2,
-                                                  (HEIGHT - 25) // 2), (WIDTH // 2 - text_surface.get_width() // 2 + text_surface.get_width() + 2,
+            pygame.draw.line(screen, (255, 255, 255), (WIDTH // 2 - text_surface.get_width() // 2 + text_surface.get_width() + 2 - 100,
+                                                  (HEIGHT - 25) // 2), (WIDTH // 2 - text_surface.get_width() // 2 + text_surface.get_width() + 2 - 100,
                                                                   (HEIGHT - 25) // 2 + text_surface.get_height()), 2)
 
-        screen.blit(text_surface, (WIDTH // 2 - text_surface.get_width() // 2, HEIGHT // 2 - text_surface.get_height() // 2))
+        screen.blit(text_surface, (WIDTH // 2 - text_surface.get_width() // 2 - 100, HEIGHT // 2 - text_surface.get_height() // 2))
         pygame.display.flip()
         clock.tick(FPS)
 
