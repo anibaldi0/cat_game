@@ -103,6 +103,3 @@ def load_score():
 
 
 
-
-
-

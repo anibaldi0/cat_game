@@ -32,7 +32,7 @@ player_name, best_score_number = load_score()
 tile_size = 60
 game_over = 0
 level = 1
-max_level = 3
+max_level = 4
 start_game = False
 init_score = 0
 previous_score_number = best_score_number
@@ -981,7 +981,6 @@ text = ""
 font_size = 60
 font = pygame.font.Font(None, font_size)
 
-
 def darw_player_input(text, font, text_color, x, y):
     img = font.render(text, True, text_color)
     width = img.get_width()
@@ -1033,6 +1032,10 @@ def show_top_scores():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_b:
+                    pygame.mixer.music.play()
+                    return None
 
         screen.blit(background_spider_web, (0, 0))
         text = font.render("Best Players", True, WHITE)
@@ -1066,6 +1069,11 @@ def easter_egg():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_b:
+                    pygame.mixer.music.play()
+                    return None
+                
         pygame.mixer.music.pause()
         screen.blit(background_spider_web, (0, 0))
         show_paused_text(screen, "Easter Egg", 75,  (WIDTH / 2, 100), GOLD)
@@ -1087,6 +1095,16 @@ def if_paused():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    run = False
+                    pygame.mixer.music.unpause()
+                if event.key == pygame.K_s:
+                    best_score_ever = show_top_scores()
+                    return best_score_ever
+                if event.key == pygame.K_e:
+                    quit()
 
         pygame.mixer.music.pause()
         screen.blit(background_normal_image, (0, 0))
@@ -1118,7 +1136,7 @@ def wait_a_moment():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-                sys.exit()
+                
         pygame.mixer.music.pause()
         pygame.display.update()
         clock.tick(FPS)
@@ -1173,9 +1191,6 @@ while running:
 
     # Manejo de eventos
     for event in pygame.event.get():
-        # # handle text input
-        # if event.type == pygame.TEXTINPUT:
-        #     text += event.text
 
         if event.type == pygame.QUIT:
             running = False
@@ -1252,6 +1267,20 @@ while running:
 
         # Dibujar el fondo en la pantalla
         screen.blit(background_image, (0, 0))
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_y:
+                    elapsed_time = 0
+                    minute = 0
+                    print("Play button pressed")
+                    wolves_intro.stop()
+                    pygame.mixer.music.play(-1)
+                    start_game = True
+
+                if event.key == pygame.K_e:
+                    print("Exit button pressed")
+                    running = False
 
         if play_button.draw(screen):
             elapsed_time = 0
@@ -1358,7 +1387,7 @@ while running:
                     new_key = Key(1020, 665)  # Ajusta las coordenadas (x, y) según tus necesidades
                     key_group.add(new_key)
 
-        if player.lives <= 0 or minute >= 3:
+        if player.lives <= 0 or minute >= 2:
             player.image = rip_cat
             player.rect.y += 1
             for tile in world.tile_list:
