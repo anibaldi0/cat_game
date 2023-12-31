@@ -32,7 +32,7 @@ player_name, best_score_number = load_score()
 tile_size = 60
 game_over = 0
 level = 1
-max_level = 4
+max_level = 7
 start_game = False
 init_score = 0
 previous_score_number = best_score_number
@@ -103,7 +103,7 @@ ice_middle_floor_image = pygame.transform.scale(pygame.image.load(ICE_MIDDLE_FLO
 
 ice_platform_image = pygame.transform.scale(pygame.image.load(ICE_MIDDLE_FLOOR).convert_alpha(), (WIDTH / 18, HEIGHT / 20))
 
-water_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 18, HEIGHT / 10)) for image in WATER_IMAGES_LIST]
+water_images = [pygame.transform.scale(pygame.image.load(image).convert_alpha(), (WIDTH / 18, HEIGHT / 18)) for image in WATER_IMAGES_LIST]
 
 restart_normal_button_image = pygame.transform.scale(pygame.image.load(RESTART_NORMAL_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 14))
 restart_hover_button_image = pygame.transform.scale(pygame.image.load(RESTART_HOVER_BUTTON_IMAGE).convert_alpha(), (WIDTH / 8, HEIGHT / 14))
@@ -1079,9 +1079,13 @@ def easter_egg():
         show_paused_text(screen, "Easter Egg", 75,  (WIDTH / 2, 100), GOLD)
         show_paused_text(screen, "Credits:", 65,  (WIDTH / 2, 175), GOLD)
         show_paused_text(screen, "Developer:   Anibal Caeiro", 45,  (WIDTH / 2, 275), WHITE)
-        show_paused_text(screen, "Professors:   Christian Baus", 45,  (WIDTH / 2, 375), WHITE)
-        show_paused_text(screen, "German Scarafilo", 45,  (WIDTH / 2 + 100, 450), WHITE)
-        show_paused_text(screen, "Marina Cardozo", 45,  (WIDTH / 2 + 100, 525), WHITE)
+        show_paused_text(screen, "Professors:   Christian Baus", 40,  (WIDTH / 2, 375), WHITE)
+        show_paused_text(screen, "German Scarafilo", 40,  (WIDTH / 2 + 100, 425), WHITE)
+        show_paused_text(screen, "Marina Cardozo", 40,  (WIDTH / 2 + 100, 475), WHITE)
+        show_paused_text(screen, "Nachi Level 3", 35,  (WIDTH / 2 + 100, 540), WHITE)
+        show_paused_text(screen, "Carla Level 5", 35,  (WIDTH / 2 + 100, 580), WHITE)
+        show_paused_text(screen, "Ceci Level 6", 35,  (WIDTH / 2 + 100, 620), WHITE)
+        show_paused_text(screen, "Meli Level 7", 35,  (WIDTH / 2 + 100, 660), WHITE)
         if back_button.draw(screen):
             pygame.mixer.music.unpause()
             return
@@ -1387,7 +1391,7 @@ while running:
                     new_key = Key(1020, 665)  # Ajusta las coordenadas (x, y) según tus necesidades
                     key_group.add(new_key)
 
-        if player.lives <= 0 or minute >= 2:
+        if player.lives <= 0 or minute >= 5:
             player.image = rip_cat
             player.rect.y += 1
             for tile in world.tile_list:
@@ -1408,7 +1412,33 @@ while running:
             save_player_score(player_name, player.score_number)
             if player.score_number > previous_score_number:
                 best_score_number = player.score_number
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_s:
+                        input_name()
+                        elapsed_time = 0
+                        minute = 0
+                        print("Restart button pressed")
+                        pygame.mixer.music.play(-1)
+                        empty_groups()
+                        level = 1  # Reiniciar al nivel 1
+                        with open("level{0}_data.csv".format(level), newline="") as csvfile:
+                            reader = csv.reader(csvfile, delimiter=",")
+                            for x, row in enumerate(reader):
+                                for y, tile in enumerate(row):
+                                    world_data[x][y] = int(tile)
+                        world.restart(world_data)
+                        player.restart(x=10, y=200)
+                        game_over = 0
+                    if event.key == pygame.K_e:
+                        quit()
+
             if restart_button.draw(screen):
+                input_name()
                 elapsed_time = 0
                 minute = 0
                 print("Restart button pressed")
@@ -1423,7 +1453,7 @@ while running:
                 world.restart(world_data)
                 player.restart(x=10, y=200)
                 game_over = 0
-
+                
             if exit_button.draw(screen):
                 print("Exit button pressed")
                 running = False
@@ -1452,7 +1482,6 @@ while running:
                 player.score_number = previous_score_number
                 player.lives = previous_lives
             else:
-                win_game.play()
                 previous_lives = player.lives
                 save_player_score(player_name, player.score_number)
                 if player.score_number > previous_score_number:
@@ -1465,7 +1494,34 @@ while running:
                 screen.blit(game_over_text, game_over_text_rect)
                 player.restart(x=-100, y=-100)
                 final_score = best_score_number
+                win_game.play()
+
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        quit()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_s:
+                            input_name()
+                            elapsed_time = 0
+                            minute = 0
+                            print("Restart button pressed")
+                            pygame.mixer.music.play(-1)
+                            empty_groups()
+                            level = 1  # Reiniciar al nivel 1
+                            with open("level{0}_data.csv".format(level), newline="") as csvfile:
+                                reader = csv.reader(csvfile, delimiter=",")
+                                for x, row in enumerate(reader):
+                                    for y, tile in enumerate(row):
+                                        world_data[x][y] = int(tile)
+                            world.restart(world_data)
+                            player.restart(x=10, y=200)
+                            game_over = 0
+                        if event.key == pygame.K_e:
+                            quit()
+
                 if restart_button.draw(screen):
+                    input_name()
                     elapsed_time = 0
                     minute = 0
                     pygame.mixer.music.play(-1)
